@@ -1,0 +1,126 @@
+String input =
+        """
+        a     := 0
+            if    10 < 1 do
+        a    :=     42      # Zuweisung des Wertes 42 an die Variable a
+        else do
+                a :=      7
+          end
+        """;
+
+    MeineGrammarLexer lexer = new MeineGrammarLexer(CharStreams.fromString(input));
+    CommonTokenStream tokens = new CommonTokenStream(lexer);
+    MeineGrammarParser parser = new MeineGrammarParser(tokens);
+    ParseTree tree = parser.programm();
+
+    PrettyPrinter pp = new PrettyPrinter();
+   // pp.visit(tree); // gibt den formatierten Code aus
+grammar MeineGrammar;
+
+// --- Programmstruktur ---
+programm : statement+ EOF ;
+
+// --- Anweisungen ---
+statement
+    : variable ':=' expression NEWLINE            # assignmentStmt
+    | ifStatement                                 # ifStmt
+    | whileStatement                              # whileStmt
+    | NEWLINE                                     # emptyLine
+    ;
+
+// --- Kontrollstrukturen ---
+ifStatement
+    : IF bedingung DO statement+ NEWLINE? (ELSE DO statement+)? END
+    ;
+
+
+
+whileStatement
+    : WHILE bedingung DO statement* END
+    ;
+
+
+
+// --- Bedingungen ---
+bedingung
+    : vergleich ( ('and' | 'or') vergleich )*
+    ;
+
+DO     : 'do' ;
+END    : 'end' ;
+IF     : 'if' ;
+ELSE   : 'else' ;
+WHILE  : 'while' ;
+
+
+// --- Ausdrücke ---
+expression
+    : variable
+    | STRING
+    | NUMBERS
+    | vergleich
+    | rechnung
+    ;
+
+// --- Vergleich und Rechnung ---
+vergleich : variable vergleichsOperanten variable ;
+rechnung  : variable rechnungsOperanten variable;
+
+vergleichsOperanten : '==' | '!=' | '<' | '>' ;
+rechnungsOperanten  : '+' | '-' | '' | '/' ;
+
+// --- Variablen ---
+variable : BEZEICHNER | NUMBERS;
+
+// --- Lexer ---
+NEWLINE : '\r'? '\n' ;
+NUMBERS : [0-9]+ ;
+BEZEICHNER : [a-zA-Z][a-zA-Z0-9] ;
+STRING : '"' ( '\' . | ~["\\r\n] )* '"' ;
+COMMENT : ('//'|'#') ~[\r\n]* -> skip ;
+WS : [ \t]+ -> skip ;
+import my.pkg.MeineGrammarBaseVisitor;
+
+public class PrettyPrinter extends MeineGrammarBaseVisitor<Void> {
+
+    private int indent = 1;
+
+    // Hilfsmethode für Einrückungen
+    private void printIndent() {
+        System.out.print(" ".repeat(indent * 4)); // 4 Leerzeichen pro Level
+    }
+
+    // Beispiel: Assignment Statement
+    @Override
+    public Void visitAssignmentStmt(MeineGrammarParser.AssignmentStmtContext ctx) {
+        printIndent();
+        System.out.println(ctx.getText());
+        return null;
+    }
+
+    // Beispiel: If Statement
+    @Override
+    public Void visitIfStmt(MeineGrammarParser.IfStmtContext ctx) {
+        printIndent();
+        System.out.println("if " + ctx.bedingung().getText() + " do");
+        indent++;
+        ctx.statement().forEach(s -> visit(s)); // rekursiv alle Statements besuchen
+        indent--;
+        if (ctx.ELSE() != null) {
+            printIndent();
+            System.out.println("else do");
+            indent++;
+            ctx.statement().forEach(s -> visit(s));
+            indent--;
+        }
+        printIndent();
+        System.out.println("end");
+        return null;
+    }
+}
+M
+
+
+@header {
+package de.uni.meinproject.parser;
+}
