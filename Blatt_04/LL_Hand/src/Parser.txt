@@ -1,0 +1,25 @@
+Programm: funktion + eof
+
+
+funktion: "(" method value ")"
+
+complex: arethmeticOperators complexHelp ComplexHelp+
+
+complexHelp: Integer | Complex
+
+method: print | str | if |
+
+value: variables | string ...
+
+whatever:
+
+complex: "(" Operator variables* ")"
+
+if: "if" booleanForm thenform optionalelseform
+booleanform:
+
+Operatoren: = | < | >
+arethmeticOperators: +
+
+Operator: [+-*/]
+variables: [0-9]*
