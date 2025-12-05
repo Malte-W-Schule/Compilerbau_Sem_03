@@ -1,0 +1,97 @@
+;; example.lisp - Beispielprogramme für den Lisp-Parser
+
+;; Einfache Arithmetik
+(+ 1 2 3 4)
+(* 5 6)
+(/ 100 4)
+
+;; Variable definieren
+(def pi 3.14159)
+(def greeting "Hello")
+
+;; Funktion definieren
+(defn square (x) (* x x))
+
+;; Funktion aufrufen
+(square 5)
+
+;; Fakultät (rekursiv)
+(defn fac (n)
+    (if (< n 2)
+        1
+        (* n (fac (- n 1)))))
+
+(fac 5)  ;; sollte 120 ergeben
+
+;; Listenlänge berechnen (rekursiv)
+(defn length (lst)
+    (if (= lst (list))
+        0
+        (+ 1 (length (tail lst)))))
+
+(length (list 1 2 3 4 5))  ;; sollte 5 ergeben
+
+;; Fibonacci (rekursiv)
+(defn fib (n)
+    (if (< n 2)
+        n
+        (+ (fib (- n 1)) (fib (- n 2)))))
+
+(fib 10)
+
+;; Let-Bindungen
+(let (x 10
+      y 20
+      z 30)
+     (+ x y z))
+
+;; Verschachtelte Let-Bindungen
+(defn calc (a b)
+    (let (sum (+ a b)
+          product (* a b))
+         (str "Sum: " sum ", Product: " product)))
+
+;; If-Else mit Do-Blöcken
+(if (> 5 3)
+    (do
+        (print "5 is greater than 3")
+        (print "This is the then branch"))
+    (print "This would be the else branch"))
+
+;; String-Operationen
+(str "Hello" " " "World")
+(print (str "The answer is: " 42))
+
+;; Listen-Operationen
+(def mylist (list 10 20 30 40 50))
+(head mylist)  ;; 10
+(tail mylist)  ;; (20 30 40 50)
+(nth mylist 2) ;; 30
+
+;; Komplexeres Beispiel: Maximum von zwei Zahlen
+(defn max (a b)
+    (if (> a b)
+        a
+        b))
+
+(max 42 17)
+
+;; List-Map simulation (würde einen Interpreter benötigen)
+(defn map-double (lst)
+    (if (= lst (list))
+        (list)
+        (list (* 2 (head lst)) (map-double (tail lst)))))
+
+;; Summe einer Liste
+(defn sum-list (lst)
+    (if (= lst (list))
+        0
+        (+ (head lst) (sum-list (tail lst)))))
+
+(sum-list (list 1 2 3 4 5))  ;; sollte 15 ergeben
+
+;; Geschachtelte Funktionsaufrufe
+(defn add-three (a b c) (+ a b c))
+(defn multiply-result (x) (* x 2))
+
+(multiply-result (add-three 1 2 3))  ;; (1+2+3)*2 = 12
