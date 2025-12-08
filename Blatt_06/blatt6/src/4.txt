@@ -1,0 +1,16 @@
+C:\Users\Malte\.jdks\openjdk-25\bin\java.exe "-javaagent:C:\Users\Malte\AppData\Local\Programs\IntelliJ IDEA Ultimate\lib\idea_rt.jar=58893" -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 -classpath C:\Users\Malte\Documents\GitHub\Compilerbau_Sem_03\Blatt_06\blatt6\out\production\blatt6 Main2
+--- Skript Start ---
+130.0
+--- REPL Start (Tippe Code) ---
+(print (x))
+> Fehler: Undefined symbol: x
+(let (x 5))
+> Fehler: Expected LPAREN but got IDENTIFIER at 1:7
+print x
+> Fehler: Undefined symbol: x
+(print (+ 1 2))
+> 3.0
+(print (a))
+> Fehler: Erwartete Funktion, bekam: 100
+(print a)
+> 100

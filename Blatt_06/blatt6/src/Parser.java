@@ -1,4 +1,3 @@
-// Parser.java - Recursive Descent Parser
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +21,14 @@ public class Parser {
         }
     }
 
+    // Hilfsmethode zum Voraussschauen (Lookahead) ohne zu konsumieren
+    private Token peek(int offset) {
+        if (position + offset < tokens.size()) {
+            return tokens.get(position + offset);
+        }
+        return null;
+    }
+
     private void expect(Token.TokenType type) {
         if (currentToken == null || currentToken.getType() != type) {
             throw new ParserException(
@@ -35,16 +42,33 @@ public class Parser {
     }
 
     public ProgramNode parse() {
-        List<ASTNode> expressions = new ArrayList<>();
+        List<ASTNode> nodes = new ArrayList<>();
 
         while (currentToken != null && currentToken.getType() != Token.TokenType.EOF) {
-            expressions.add(parseExpression());
+            nodes.add(parseTopLevel());
         }
 
-        return new ProgramNode(expressions);
+        return new ProgramNode(nodes);
     }
 
-    private ASTNode parseExpression() {
+    // Neue Methode: Unterscheidet zwischen Statements (def) und Expressions (1, if, add)
+    private ASTNode parseTopLevel() {
+        if (currentToken.getType() == Token.TokenType.LPAREN) {
+            Token next = peek(1);
+            if (next != null && next.getType() == Token.TokenType.IDENTIFIER) {
+                if (next.getValue().equals("def")) {
+                    return parseDef();
+                }
+                if (next.getValue().equals("defn")) {
+                    return parseDefn();
+                }
+            }
+        }
+        return parseExpression();
+    }
+
+    // Gibt jetzt strikt 'Expression' zurück
+    private Expression parseExpression() {
         if (currentToken == null) {
             throw new ParserException("Unexpected end of input");
         }
@@ -59,7 +83,7 @@ public class Parser {
             case IDENTIFIER:
                 return parseVariable();
             case LPAREN:
-                return parseList();
+                return parseListExpression(); // Umbenannt, da Statements hier nicht erlaubt sind
             default:
                 throw new ParserException(
                         String.format("Unexpected token %s at %d:%d",
@@ -93,45 +117,45 @@ public class Parser {
         return new VariableNode(name);
     }
 
-    private ASTNode parseList() {
+    // Verarbeitet Listen, die Expressions sind (kein def/defn hier erlaubt!)
+    private Expression parseListExpression() {
         expect(Token.TokenType.LPAREN);
 
         if (currentToken == null) {
             throw new ParserException("Unexpected end of input after '('");
         }
 
-        // Empty list
+        // Empty list als Variable "list" interpretieren (oder Fehler werfen, je nach Sprachdesign)
         if (currentToken.getType() == Token.TokenType.RPAREN) {
             advance();
+            // Leere Liste ist hier ein Call auf "list" ohne Argumente
             return new ListNode(new VariableNode("list"), new ArrayList<>());
         }
 
-        // Check for special forms
+        // Check for special forms keywords
         if (currentToken.getType() == Token.TokenType.IDENTIFIER) {
             String keyword = currentToken.getValue();
 
             switch (keyword) {
-                case "def":
-                    return parseDef();
-                case "defn":
-                    return parseDefn();
                 case "if":
                     return parseIf();
                 case "let":
                     return parseLet();
                 case "do":
                     return parseDo();
+                case "def":
+                case "defn":
+                    throw new ParserException("Def and Defn are statements and cannot be used as expressions.");
                 default:
-                    // Regular function call
                     return parseFunctionCall();
             }
         }
 
-        // If not an identifier, parse as regular list
         return parseFunctionCall();
     }
 
     private DefNode parseDef() {
+        expect(Token.TokenType.LPAREN); // '(' manuell prüfen, da parseTopLevel nur peekt
         advance(); // skip 'def'
 
         if (currentToken == null || currentToken.getType() != Token.TokenType.IDENTIFIER) {
@@ -141,7 +165,7 @@ public class Parser {
         String name = currentToken.getValue();
         advance();
 
-        ASTNode value = parseExpression();
+        Expression value = parseExpression(); // Value muss Expression sein
 
         expect(Token.TokenType.RPAREN);
 
@@ -149,6 +173,7 @@ public class Parser {
     }
 
     private DefnNode parseDefn() {
+        expect(Token.TokenType.LPAREN);
         advance(); // skip 'defn'
 
         if (currentToken == null || currentToken.getType() != Token.TokenType.IDENTIFIER) {
@@ -172,8 +197,7 @@ public class Parser {
 
         expect(Token.TokenType.RPAREN);
 
-        // Parse body
-        ASTNode body = parseExpression();
+        Expression body = parseExpression(); // Body muss Expression sein
 
         expect(Token.TokenType.RPAREN);
 
@@ -183,10 +207,10 @@ public class Parser {
     private IfNode parseIf() {
         advance(); // skip 'if'
 
-        ASTNode condition = parseExpression();
-        ASTNode thenBranch = parseExpression();
+        Expression condition = parseExpression();
+        Expression thenBranch = parseExpression();
 
-        ASTNode elseBranch = null;
+        Expression elseBranch = null;
         if (currentToken != null && currentToken.getType() != Token.TokenType.RPAREN) {
             elseBranch = parseExpression();
         }
@@ -195,32 +219,39 @@ public class Parser {
 
         return new IfNode(condition, thenBranch, elseBranch);
     }
-
     private LetNode parseLet() {
         advance(); // skip 'let'
 
-        // Parse bindings
-        expect(Token.TokenType.LPAREN);
+        expect(Token.TokenType.LPAREN); // Start der Bindings-Liste
 
         List<String> names = new ArrayList<>();
-        List<ASTNode> values = new ArrayList<>();
+        List<Expression> values = new ArrayList<>();
 
+        // Solange wir nicht am Ende der Bindings-Liste ')' sind
         while (currentToken != null && currentToken.getType() != Token.TokenType.RPAREN) {
+
+            // 1. Wir erwarten eine öffnende Klammer für das Paar (x 10)
+            expect(Token.TokenType.LPAREN);
+
+            // 2. Jetzt muss der Name kommen
             if (currentToken.getType() != Token.TokenType.IDENTIFIER) {
-                throw new ParserException("Expected identifier in let bindings");
+                throw new ParserException("Expected identifier name in let binding");
             }
             names.add(currentToken.getValue());
             advance();
 
+            // 3. Jetzt kommt der Wert (Expression)
             values.add(parseExpression());
+
+            // 4. Wir erwarten eine schließende Klammer für das Paar
+            expect(Token.TokenType.RPAREN);
         }
 
-        expect(Token.TokenType.RPAREN);
+        expect(Token.TokenType.RPAREN); // Ende der Bindings-Liste
 
-        // Parse body
-        ASTNode body = parseExpression();
+        Expression body = parseExpression(); // Der Body (z.B. (+ x y))
 
-        expect(Token.TokenType.RPAREN);
+        expect(Token.TokenType.RPAREN); // Ende des gesamten let-Ausdrucks
 
         return new LetNode(names, values, body);
     }
@@ -228,29 +259,63 @@ public class Parser {
     private DoNode parseDo() {
         advance(); // skip 'do'
 
-        List<ASTNode> expressions = new ArrayList<>();
+        // DoNode darf Statements enthalten, auch wenn es selbst eine Expression ist
+        // (es gibt den Wert des letzten Elements zurück)
+        List<ASTNode> nodes = new ArrayList<>();
 
         while (currentToken != null && currentToken.getType() != Token.TokenType.RPAREN) {
-            expressions.add(parseExpression());
+            // Hier nutzen wir parseTopLevel, um auch 'def' innerhalb von 'do' zu erlauben (optional)
+            // Wenn keine lokalen Definitionen erlaubt sein sollen, nutze parseExpression()
+            nodes.add(parseTopLevel());
         }
 
         expect(Token.TokenType.RPAREN);
 
-        return new DoNode(expressions);
+        return new DoNode(nodes);
     }
 
-    private ListNode parseFunctionCall() {
-        ASTNode operator = parseExpression();
+    private Expression parseFunctionCall() {
+        // 1. Operator parsen
+        Expression operator = parseExpression();
 
-        List<ASTNode> arguments = new ArrayList<>();
+        List<Expression> arguments = new ArrayList<>();
 
+        // 2. Alle Argumente einsammeln
         while (currentToken != null && currentToken.getType() != Token.TokenType.RPAREN) {
             arguments.add(parseExpression());
         }
 
+        // 3. WICHTIG: Erst die Klammer zumachen!
         expect(Token.TokenType.RPAREN);
 
+        // 4. Entscheidung: Umwandeln (Desugaring) oder flach lassen?
+        // Wir wandeln nur um, wenn es ein BinOp ist UND mehr als 2 Argumente hat.
+        // (Bei genau 2 Argumenten ist es ja schon binär, da sparen wir uns die Arbeit).
+        if (isBinOp(operator.toSExpression()) && arguments.size() > 2) {
+            return sugarExpression(operator, arguments); // <-- Hier das Ergebnis ZURÜCKGEBEN
+        }
+
+        // 5. Standardfall (kein BinOp oder weniger als 3 Argumente)
         return new ListNode(operator, arguments);
+    }
+
+    // Ich habe die Methode mal in "desugar..." umbenannt, da wir den "Zucker" (die Abkürzung) entfernen.
+    private Expression sugarExpression(Expression operator, List<Expression> arguments) {
+        // Start mit den ersten beiden: (+ 1 2)
+        ListNode current = new ListNode(operator, List.of(arguments.get(0), arguments.get(1)));
+
+        // Den Rest schrittweise anfügen
+        for (int i = 2; i < arguments.size(); i++) {
+            // Das vorherige Ergebnis wird zum linken Argument des neuen Knotens
+            current = new ListNode(operator, List.of(current, arguments.get(i)));
+        }
+
+        return current;
+    }
+
+    private boolean isBinOp(String eingabe) {
+        // Kleiner Tipp: .equals ist hier korrekt, aber switch ist oft lesbarer bei Strings ab Java 7
+        return eingabe.equals("+") || eingabe.equals("-") || eingabe.equals("*") || eingabe.equals("/");
     }
 
     public static class ParserException extends RuntimeException {
