@@ -2,6 +2,8 @@
 import java.util.ArrayList;
 import java.util.List;
 
+// region code
+
 public class Lexer {
     private final String input;
     private int position;
@@ -215,3 +217,6 @@ public class Lexer {
         }
     }
 }
+
+// endregion
+

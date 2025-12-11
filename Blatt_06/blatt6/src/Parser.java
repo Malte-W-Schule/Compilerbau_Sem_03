@@ -276,7 +276,7 @@ public class Parser {
 
     private Expression parseFunctionCall() {
         // 1. Operator parsen
-        Expression operator = parseExpression();
+        Expression operator = parseExpression();//Todo eher var/Symbol
 
         List<Expression> arguments = new ArrayList<>();
 
@@ -295,18 +295,16 @@ public class Parser {
             return sugarExpression(operator, arguments); // <-- Hier das Ergebnis ZURÜCKGEBEN
         }
 
-        // 5. Standardfall (kein BinOp oder weniger als 3 Argumente)
         return new ListNode(operator, arguments);
     }
 
-    // Ich habe die Methode mal in "desugar..." umbenannt, da wir den "Zucker" (die Abkürzung) entfernen.
     private Expression sugarExpression(Expression operator, List<Expression> arguments) {
-        // Start mit den ersten beiden: (+ 1 2)
+        // Start : (+ 1 2)
         ListNode current = new ListNode(operator, List.of(arguments.get(0), arguments.get(1)));
 
-        // Den Rest schrittweise anfügen
+        // Den Rest
         for (int i = 2; i < arguments.size(); i++) {
-            // Das vorherige Ergebnis wird zum linken Argument des neuen Knotens
+
             current = new ListNode(operator, List.of(current, arguments.get(i)));
         }
 

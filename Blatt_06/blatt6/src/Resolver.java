@@ -46,7 +46,6 @@ public class Resolver {
     }
 
     // --- Statement Handler ---
-
     private void visitDef(DefNode def) {
         // 1. Wir müssen wissen, welchen Typ der Wert hat
         // (Hier rufen wir resolve rekursiv auf)

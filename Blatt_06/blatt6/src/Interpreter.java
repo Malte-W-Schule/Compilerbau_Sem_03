@@ -3,8 +3,6 @@ import java.util.List;
 
 public class Interpreter {
 
-    // Keine Konstruktoren mehr nötig, alles statisch!
-
     public static void interpret(ProgramNode node, Environment env) {
 
         for(ASTNode n : node.getNodes()) {
@@ -14,16 +12,12 @@ public class Interpreter {
 
     public static void setup(Environment env)
     {
-
         env.define("+", new LispFunction() {
 
             @Override
-
             public Object apply(List<Object> args) {
 
                 double sum = 0;
-
-
 
                 for (Object arg : args) {
 
@@ -130,9 +124,7 @@ public class Interpreter {
             }
 
         });
-
-
-
+        
     }
 
     public static Object evaluate(ASTNode node, Environment env) {

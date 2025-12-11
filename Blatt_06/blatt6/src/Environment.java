@@ -7,6 +7,8 @@ public class Environment {
     private Map<String, Object> values = new HashMap<>();
     private Environment parent; // Für spätere Scopes (optional für den Anfang)
 
+
+    //todo value
     public Environment(Environment parent) {
         // Hier registrieren wir die NATIVEN Funktionen
         this.parent = parent;

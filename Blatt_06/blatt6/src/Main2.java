@@ -8,7 +8,7 @@ public class Main2 {
         Interpreter.setup(globalEnv);
 
         String s2 = "(def a 100) (let ((x 10) (y 20)) (print (+ x y a)))";
-
+        //todo klammern zählen (() ... mööp fehlt ")"
         System.out.println("--- Skript Start ---");
         run(s2, globalEnv); // Hilfsmethode nutzen
 
