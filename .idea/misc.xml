@@ -3,6 +3,10 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+  <component name="KubernetesApiProvider"><![CDATA[{}]]></component>
+>>>>>>> Stashed changes
 =======
   <component name="KubernetesApiProvider"><![CDATA[{}]]></component>
 >>>>>>> Stashed changes
