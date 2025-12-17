@@ -4,7 +4,11 @@
     <modules>
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       <module fileurl="file://$PROJECT_DIR$/Compilerbau_Sem_03.iml" filepath="$PROJECT_DIR$/Compilerbau_Sem_03.iml" />
+=======
+      <module fileurl="file://$PROJECT_DIR$/.idea/Compilerbau_Sem_03.iml" filepath="$PROJECT_DIR$/.idea/Compilerbau_Sem_03.iml" />
+>>>>>>> Stashed changes
 =======
       <module fileurl="file://$PROJECT_DIR$/.idea/Compilerbau_Sem_03.iml" filepath="$PROJECT_DIR$/.idea/Compilerbau_Sem_03.iml" />
 >>>>>>> Stashed changes
