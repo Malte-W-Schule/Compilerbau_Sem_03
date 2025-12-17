@@ -1,0 +1,12 @@
+
+stmt
+vardecl
+type ID ;;
+int d ;;
+
+while
+while(expr)block
+while( d ){ stmt }
+while( d ){ return T return; }
+
+
