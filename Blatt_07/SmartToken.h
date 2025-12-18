@@ -49,7 +49,7 @@ public:
 
 
     char* getLexem();
-private:
+//private:
     Token* pObj;        ///< Pointer to the current shared token
     RefCounter* rc;     ///< Pointer to the reference counter (used for the current token)
 };

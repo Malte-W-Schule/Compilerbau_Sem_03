@@ -34,7 +34,7 @@ public:
     RefCounter(const RefCounter&) = delete;
     RefCounter& operator=(const RefCounter&) = delete;
 
-private:
+//private:
     unsigned int n;     ///< How many SmartToken share ownership of "our" object?
 };
 

@@ -9,6 +9,9 @@
 
 class RingBuffer {
 public:
+
+    void PrintBuffer();
+
     /**
      * Constructor that creates a new ring buffer for max. `size` elements
      *

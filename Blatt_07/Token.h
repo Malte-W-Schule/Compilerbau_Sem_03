@@ -5,8 +5,16 @@
 #ifndef BLATT_07_TOKEN_H
 #define BLATT_07_TOKEN_H
 
+
+
 class Token {
 public:
+
+
+    Token(const Token& t);
+
+    Token& operator= (const Token& t);
+
     /**
      * Constructs a new token object.
      *
