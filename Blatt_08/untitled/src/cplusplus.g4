@@ -6,7 +6,7 @@ grammar cplusplus;
 //#(Präprozessor) == Kommentar
 
 // === Programm ===
-programm:   stmt EOF;
+programm:   stmt+ EOF;
 
 // === Statement ===
 stmt: if_stmt
@@ -16,6 +16,7 @@ stmt: if_stmt
     | assign
     | f_call
     | f_decl
+    | class
     ;
 
 // === Expression ===
@@ -31,7 +32,7 @@ expr: LBRACK expr RBRACK            #grouping  //todo klammern grouping wie? wie
 // === Function Declaration ===
 // void cast(type parameter1,...) { body (return*) }
 // Class::Methode(){}
-f_decl: 'virtual'? type ID parameter_decl block;
+f_decl: 'virtual'? type ID parameter_decl block';';
 // === Function Call ===
 f_call: ID parameter_call ';';
 // === Parameter ===
@@ -48,7 +49,7 @@ point_expr:
 
 // === Logic Comparison ===
 //comparrison expression
-com_expr: expr LOP expr;
+com_expr: expr COMP expr;
 
 // === Bool ===
 bool    :   'true' | 'false';
@@ -85,15 +86,15 @@ type: 'string'
     | 'void';
 
 // === Declaration ===
-decl     :    type  '&'?  ID;
+decl     :    type  '&'?  ID ';' ;
 // int& int int &
 
 // === Initialisation ===
-init    :   type '&'? ID ASS expr;
+init    :   type '&'? ID ASS expr ';';
 
 // === Assign ===
 //assign    zuweisung
-assign  : ID ASS expr;
+assign  : ID ASS expr ';' ;
 
 
 //Klassen, Einfach-Vererbung (genau eine optionale Basisklasse), Polymorphie:
@@ -104,11 +105,11 @@ assign  : ID ASS expr;
   //class D : public B { public: /* Felder + Methoden */ }: Vererbung mit genau einer Basisklasse, keine Zyklen
 
 // === Classes ===
-class: 'class' (':' ID)? ID CLBRACK ('public:')? (stmt)* CRBRACK;
+class: 'class' (':' ID)? ID CLBRACK ('public:')? (stmt)* CRBRACK';';
 //Parameterloser Konstruktor und weitere Konstruktoren (jeweils ohne Initialisierungslisten), Verwendung nur als T x; (ruft T() auf) oder T x = T(args); (kein direkter Aufruf T x(args);!)
-constructor_call: ID ID;
+constructor_call: ID ID';';
 // T x; (ruft T()
-constructor_decl: ID parameter_decl CLBRACK block CRBRACK;
+constructor_decl: ID parameter_decl CLBRACK block CRBRACK';';
 
 // === Method call ===
 m_call: ID '.' ID parameter_call?;
