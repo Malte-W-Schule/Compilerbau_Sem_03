@@ -105,7 +105,8 @@ assign  : ID ASS expr ';' ;
   //class D : public B { public: /* Felder + Methoden */ }: Vererbung mit genau einer Basisklasse, keine Zyklen
 
 // === Classes ===
-class_decl: 'class' (':' ID)? ID CLBRACK ('public:')? (stmt)* CRBRACK';';
+class_decl: 'class' ID (':' ID)? CLBRACK ('public:')? (stmt)* CRBRACK';';
+
 //Parameterloser Konstruktor und weitere Konstruktoren (jeweils ohne Initialisierungslisten), Verwendung nur als T x; (ruft T() auf) oder T x = T(args); (kein direkter Aufruf T x(args);!)
 constructor_call: ID ID';';
 // T x; (ruft T()
