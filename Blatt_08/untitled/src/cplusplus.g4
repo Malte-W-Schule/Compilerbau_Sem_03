@@ -6,7 +6,7 @@ grammar cplusplus;
 //#(Präprozessor) == Kommentar
 
 // === Programm ===
-programm:   stmt+ EOF;
+programm: stmt+ EOF;
 
 // === Statement ===
 stmt: if_stmt
@@ -82,8 +82,8 @@ type: 'string'
     | 'int'
     | 'bool'
     | 'char'
-    | 'class'
-    | 'void';
+    | 'void'
+    ;
 
 // === Declaration ===
 decl     :    type  '&'?  ID ';' ;
@@ -105,7 +105,26 @@ assign  : ID ASS expr ';' ;
   //class D : public B { public: /* Felder + Methoden */ }: Vererbung mit genau einer Basisklasse, keine Zyklen
 
 // === Classes ===
-class_decl: 'class' ID (':' ID)? CLBRACK ('public:')? (stmt)* CRBRACK';';
+//class_decl: CLASSS ID (':' ID)? CLBRACK ('public:')? (stmt)* CRBRACK';';
+/*
+class_decl:
+    CLASS ID
+    (':' access_specifier ID)?  // z. B. `: public Base`
+    CLBRACK
+    class_body
+    CRBRACK
+    ';';
+
+access_specifier: 'public' | 'private';
+
+class_body:
+    (access_specifier ':' (stmt)+ )*
+    | (stmt)*;
+*/
+//class_decl: CLASSS ID (':' ID)? CLBRACK ('public:')? (stmt)* CRBRACK';';
+class_decl : CLASS ID (':' PUBLIC ID)? CLBRACK
+(PUBLIC ':')?
+(stmt)* CRBRACK ';';
 
 //Parameterloser Konstruktor und weitere Konstruktoren (jeweils ohne Initialisierungslisten), Verwendung nur als T x; (ruft T() auf) oder T x = T(args); (kein direkter Aufruf T x(args);!)
 constructor_call: ID ID';';
@@ -154,8 +173,8 @@ COMP    :   '==' | '!=' | '<' | '>' | '>=' | '<=';
 LOG     :   '&&'|'||'|'!';
 
 // === Lexer-Rules ===
-STRING  :   '"'.*'"';
-ID      :   [a-zA-Z][a-zA-Z0-9]*;
+STRING : '"' (~["\\] | '\\' .)* '"';
+//STRING  :   '"'.*'"';
 INT     :   [0-9]+;
 
 // === Token-Definitionen ===
@@ -192,7 +211,7 @@ CRBRACK :   '}';
 // === Comments & White Spaces ===
 
 // === White Space ===
-WS          :   [\t\r\n]+  -> skip;
+WS          :   [ \t\r\n]+ -> skip ;
 
 // === Comment ===
 // Zeilenweise Kommentare: // bis zum Zeilenende
@@ -206,3 +225,6 @@ M_L_COMMENT :   '/*' .*? '*/' -> skip; //.*? nicht gierig
 // === Präprozessor-Direktriven ===
 // Präprozessor-Direktiven: # bis zum Zeilenende (soll als Kommentar behandelt werden)
 PREP        :   '#'[.*? \n] -> skip;
+
+// === ID ===
+ID      :   [a-zA-Z][a-zA-Z0-9]*;
