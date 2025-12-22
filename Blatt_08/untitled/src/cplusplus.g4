@@ -18,13 +18,10 @@ stmt: if_stmt
 
 // === Expression ===
 //expression / value
-expr: LBRACK expr RBRACK #grouping  //todo klammern grouping wie? wie logic calculations?
-    | expr '*' expr #mul_expr
-    | expr '/' expr #div_expr
-    | expr '%' expr #mod_expr
-    | expr '+' expr #add_expr
-    | expr '-' expr #sub_expr
-    | atom          #atom_expr
+expr: LBRACK expr RBRACK            #grouping  //todo klammern grouping wie? wie logic calculations?
+    | expr ('*' | '/' | '%') expr   #point_expr
+    | expr ('+' | '-') expr         #add_expr
+    | atom                          #atom_expr
     ;
 
 /*
