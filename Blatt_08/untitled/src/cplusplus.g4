@@ -14,20 +14,34 @@ stmt: if_stmt
     | decl
     | init
     | assign
+    | f_call
+    | f_decl
     ;
 
 // === Expression ===
 //expression / value
 expr: LBRACK expr RBRACK            #grouping  //todo klammern grouping wie? wie logic calculations?
     | expr ('*' | '/' | '%') expr   #point_expr
-    | expr ('+' | '-') expr         #add_expr
+    | expr ('+' | '-') expr         #line_expr
     | atom                          #atom_expr
     ;
+
+// === Functions ===
+//Überladung (Overloading) nur per exakt passender Signatur (Name + Anzahl + exakte Typen inkl. &‑Markierung)
+// === Function Declaration ===
+// void cast(type parameter1,...) { body (return*) }
+// Class::Methode(){}
+f_decl: 'virtual'? type ID parameter_decl block;
+// === Function Call ===
+f_call: ID parameter_call ';';
+// === Parameter ===
+parameter_decl:  LBRACK ( type ID (','type ID)* )? RBRACK;
+parameter_call:  LBRACK (  ID (',' ID)* )? RBRACK;
 
 /*
 // === Logic Operation ===
 lop_expr: mul_expr | add_expr;
-
+T& x = expr; T& p
 line_expr: add_expr LOP add_expr;
 point_expr:
 */
@@ -40,15 +54,16 @@ com_expr: expr LOP expr;
 bool    :   'true' | 'false';
 
 // === Block ===
-block : CLBRACK stmt* expr* CRBRACK;
+block : CLBRACK stmt* return CRBRACK;
 
+return: ('return' expr)?;
 // === IF ===
 //if( statement){ then block, else block }
 if_stmt: IF LBRACK expr RBRACK then_block (else_block)? ;
 //else block
-else_block: ELSE CLBRACK stmt* CRBRACK;
+else_block: ELSE block;
 //then block
-then_block: CLBRACK stmt* CRBRACK;
+then_block: block;
 
 // === while ===:
 while_stmt: WHILE LBRACK com_expr RBRACK block;
@@ -66,17 +81,39 @@ type: 'string'
     | 'int'
     | 'bool'
     | 'char'
-    | 'class';
+    | 'class'
+    | 'void';
 
 // === Declaration ===
-decl     :    type    ID;
+decl     :    type  '&'?  ID;
+// int& int int &
 
 // === Initialisation ===
-init    :   type ID ASS expr;
+init    :   type '&'? ID ASS expr;
 
 // === Assign ===
 //assign    zuweisung
 assign  : ID ASS expr;
+
+
+//Klassen, Einfach-Vererbung (genau eine optionale Basisklasse), Polymorphie:
+  //class A { public: /* Felder + Methoden */ } mit Feldern und Methoden (alles “public” sichtbar)
+  //Felder können vom Typ her Basistypen oder Klassen sein
+  //Parameterloser Konstruktor und weitere Konstruktoren (jeweils ohne Initialisierungslisten), Verwendung nur als T x; (ruft T() auf) oder T x = T(args); (kein direkter Aufruf T x(args);!)
+  //Methoden können als virtual deklariert werden
+  //class D : public B { public: /* Felder + Methoden */ }: Vererbung mit genau einer Basisklasse, keine Zyklen
+
+// === Classes ===
+class: 'class' (':' ID)? ID CLBRACK ('public:')? (stmt)* CRBRACK;
+//Parameterloser Konstruktor und weitere Konstruktoren (jeweils ohne Initialisierungslisten), Verwendung nur als T x; (ruft T() auf) oder T x = T(args); (kein direkter Aufruf T x(args);!)
+constructor_call: ID ID;
+// T x; (ruft T()
+constructor_decl: ID parameter_decl CLBRACK block CRBRACK;
+
+// === Method call ===
+m_call: ID '.' ID parameter_call?;
+//obj.f
+//Feld-/Methodenzugriff: obj.f, obj.m(args)
 
 // SmartToken::SmartToken(Token* p):pObj(p),rc(new RefCounter()) {
    //    rc->inc();
@@ -94,12 +131,12 @@ Nur lokale Variablen (keine globalen Variablen)
 */
 
 
-
 // === Logic Operator ===
 //logic operator    Arithmetik (nur int): +, -, *, /, % (binäre Ausdrücke); +, - (unäre Ausdrücke)
 LOP     :   '+'|'-'|'*'|'/'|'%';
 PLOP    :   '*'|'/';
 LLOP    :   '+'|'-'|'%';
+
 
 
 // === Assign ===
