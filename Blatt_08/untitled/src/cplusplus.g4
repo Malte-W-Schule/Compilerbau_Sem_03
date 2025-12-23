@@ -16,6 +16,9 @@ stmt: if_stmt
     | assign
     | f_call
     | f_decl
+    | m_call
+    | constructor_call
+    | constructor_decl
     | class_decl
     ;
 
@@ -27,12 +30,17 @@ expr: LBRACK expr RBRACK            #grouping  //todo klammern grouping wie? wie
     | atom                          #atom_expr
     ;
 
+//Parameterloser Konstruktor und weitere Konstruktoren (jeweils ohne Initialisierungslisten), Verwendung nur als T x; (ruft T() auf) oder T x = T(args); (kein direkter Aufruf T x(args);!)
+constructor_call: ID ID';';
+// T x; (ruft T()
+constructor_decl: ID parameter_decl block;
+
 // === Functions ===
 //Überladung (Overloading) nur per exakt passender Signatur (Name + Anzahl + exakte Typen inkl. &‑Markierung)
 // === Function Declaration ===
 // void cast(type parameter1,...) { body (return*) }
 // Class::Methode(){}
-f_decl: 'virtual'? type ID parameter_decl block';';
+f_decl: 'virtual'? type ID parameter_decl (block|';');
 // === Function Call ===
 f_call: ID parameter_call ';';
 // === Parameter ===
@@ -124,11 +132,6 @@ class_body:
 class_decl : CLASS ID (':' PUBLIC ID)? CLBRACK
 (PUBLIC ':')?
 (stmt)* CRBRACK ';';
-
-//Parameterloser Konstruktor und weitere Konstruktoren (jeweils ohne Initialisierungslisten), Verwendung nur als T x; (ruft T() auf) oder T x = T(args); (kein direkter Aufruf T x(args);!)
-constructor_call: ID ID';';
-// T x; (ruft T()
-constructor_decl: ID parameter_decl CLBRACK block CRBRACK';';
 
 // === Method call ===
 m_call: ID '.' ID parameter_call?;
