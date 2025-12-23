@@ -60,7 +60,7 @@ block : CLBRACK stmt* return CRBRACK;
 return: ('return' expr)?;
 // === IF ===
 //if( statement){ then block, else block }
-if_stmt: IF LBRACK expr RBRACK then_block (else_block)? ;
+if_stmt: IF LBRACK com_expr RBRACK then_block (else_block)? ;
 //else block
 else_block: ELSE block;
 //then block
@@ -95,7 +95,6 @@ init    :   type '&'? ID ASS expr ';';
 // === Assign ===
 //assign    zuweisung
 assign  : ID ASS expr ';' ;
-
 
 //Klassen, Einfach-Vererbung (genau eine optionale Basisklasse), Polymorphie:
   //class A { public: /* Felder + Methoden */ } mit Feldern und Methoden (alles “public” sichtbar)
