@@ -24,7 +24,7 @@ stmt: if_stmt
 
 // === Expression ===
 //expression / value
-expr: LBRACK expr RBRACK            #grouping  //todo klammern grouping wie? wie logic calculations?
+expr: LBRACK expr RBRACK            #grouping
     | expr ('*' | '/' | '%') expr   #point_expr
     | expr ('+' | '-') expr         #line_expr
     | atom                          #atom_expr
@@ -53,22 +53,42 @@ lop_expr: mul_expr | add_expr;
 T& x = expr; T& p
 line_expr: add_expr LOP add_expr;
 point_expr:
-*/
-
+*/  //a < v !a < v   a < !v    !( a < v)    !a = !b
+// !a != !b   a < v && a > v   a  < v && c     ( a && b) || c     a + v == c && a < c
 // === Logic Comparison ===
 //comparrison expression
-com_expr: expr COMP expr;
+/*
+com_expr: com_expr COMP com_expr
+        | LBRACK com_expr COMP com_expr RBRACK //!( a == b)
+        | (NEGATE)? (bool|ID)
+        | (NEGATE)? LBRACK (bool|ID) RBRACK
+        |  NEGATE com_expr COMP com_expr
+        ;
+*/
+
+// Die Hauptebene für Vergleiche
+com_expr
+    : primary_expr (COMP primary_expr)*
+    ;
+
+// Die Ebene für einzelne Werte, Klammern und Negationen
+primary_expr
+    : (NEGATE)? atom
+    | (NEGATE)? LBRACK com_expr RBRACK
+    | (NEGATE)? LBRACK expr RBRACK
+    | (NEGATE)? expr
+    ;
 
 // === Bool ===
 bool    :   'true' | 'false';
 
 // === Block ===
-block : CLBRACK stmt* return CRBRACK;
+block : CLBRACK stmt* return? CRBRACK;
 
-return: ('return' expr)?;
+return: ('return' expr)? ';';
 // === IF ===
 //if( statement){ then block, else block }
-if_stmt: IF LBRACK com_expr RBRACK then_block (else_block)? ;
+if_stmt: IF LBRACK (com_expr)+ RBRACK then_block (else_block)?;
 //else block
 else_block: ELSE block;
 //then block
@@ -82,7 +102,9 @@ atom: STRING
     | CHAR
     | INT
     | ID
-    | LITERAL;
+    | LITERAL
+    | bool
+    ;
 
 
 // === Type ===
@@ -160,20 +182,17 @@ LOP     :   '+'|'-'|'*'|'/'|'%';
 PLOP    :   '*'|'/';
 LLOP    :   '+'|'-'|'%';
 
-
-
 // === Assign ===
 // Zuweisung: =
 ASS     :   '=';
 
 // === Comparitor ===
 // Vergleich: ==, !=, <, <=, >, >= (int und char; bool und string nur == und !=)
-COMP    :   '==' | '!=' | '<' | '>' | '>=' | '<=';
+COMP    :   '==' | '!=' | '<' | '>' | '>=' | '<=' | '&&' | '||';
 
 // === Logic ===
 //2 operant (1 & 2) wird nicht ausgeführt wenn 1 bereits true bzw false definiert
-LOG     :   '&&'|'||'|'!';
-
+NEGATE  :   '!';
 // === Lexer-Rules ===
 STRING : '"' (~["\\] | '\\' .)* '"';
 //STRING  :   '"'.*'"';
