@@ -1,0 +1,68 @@
+
+#Imports -> Kommentar
+
+--- Typen ---
+
+bool 				(true/false)
+int 				(Ziffern ohne punkt 42)
+string 				("wert")
+char 				('wert')
+void				()
+
+zusätzliche klassentypen
+
+escapes mit \ in literalen \0 als einzelnes char
+
+--- Variablen nur lokal---
+Deklaration T x; und initialisierung T x = expr;
+zuweisung =
+
+
+// --- Ausdrücke ---:
+ArithmetikOperators: 		"+" | "-" | "*" | "/" | "%" (binär) +,- (unär)
+zuweisung:			"="
+vergleich:			"==" | "!=" | "<" | "<=" | ">" | "=>" (int und char; bool und string nur == und !=)
+a
+logik:				"&&" | "||" (short-circuit?) "!" (nur bool)
+
+gruppierung:			"(" wert wer.. ")"
+funktinsaufrufe:		f(args)
+
+
+block:				"{" expression "}"
+
+Logik: && und || (beide mit Short‑Circuit) und ! (nur bool)
+Klammern zur Gruppierung von Ausdrücken (...)
+Funktionsaufrufe f(args)
+Feld-/Methodenzugriff: obj.f, obj.m(args)
+
+
+Kontrollfluss:
+if-then-else mit optionalem else-Teil, while, Block { ... }
+return
+
+ifStmt:				"if" statement "then" block ("else" block)*
+whileStmt:			"while" statement ":"  block
+
+Funktionen/Methoden:
+Definition und Aufruf
+Überladung (Overloading) nur per exakt passender Signatur (Name + Anzahl + exakte Typen inkl. &‑Markierung)
+C++‑Referenzen “light”:
+Deklaration Variable: T& x = expr; bzw. Deklaration Parameter: T& p
+Initialisierung für Referenz-Variablen obligatorisch
+Klassen, Einfach-Vererbung (genau eine optionale Basisklasse), Polymorphie:
+class A { public: /* Felder + Methoden */ } mit Feldern und Methoden (alles “public” sichtbar)
+Felder können vom Typ her Basistypen oder Klassen sein
+Parameterloser Konstruktor und weitere Konstruktoren (jeweils ohne Initialisierungslisten), Verwendung nur als T x; (ruft T() auf) oder T x = T(args); (kein direkter Aufruf T x(args);!)
+Methoden können als virtual deklariert werden
+class D : public B { public: /* Felder + Methoden */ }: Vererbung mit genau einer Basisklasse, keine Zyklen
+Eingebaute Funktionen (Runtime/Standardbibliothek): print_bool, print_int, print_char, print_string (Ausgabe eines Werts des jeweiligen Typs)
+Kommentare:
+Zeilenweise Kommentare: // bis zum Zeilenende
+Block-Kommentare: /* bis zum */ (kann über mehrere Zeilen gehen)
+Präprozessor-Direktiven: # bis zum Zeilenende (soll als Kommentar behandelt werden)
+Programmorganisation:
+Ein einzelnes Source‑File mit einer optionalen main()-Funktion
+Präprozessor-Anweisungen sollen Sie wie Kommentare ignorieren (behandeln Sie #include wie einen zeilenweisen Kommentar, d.h. ab einem # wird der Input bis zum nächsten Zeilenumbruch ignoriert)
+Main-Funktion: zulässig sind die Formen int main() und void main()
+
