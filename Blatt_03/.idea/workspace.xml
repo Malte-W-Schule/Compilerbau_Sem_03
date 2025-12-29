@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="AutoImportSettings">
-    <option name="autoReloadType" value="SELECTIVE" />
-  </component>
   <component name="ChangeListManager">
-    <list default="true" id="6f58e9c4-e5f0-4b9a-ac1b-fce9b5ccdbc3" name="Changes" comment="">
+    <list default="true" id="73ab10b4-dcb9-482d-b2e6-99c1007fc334" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/../.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Blatt_04/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../Blatt_04/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -15,10 +13,10 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
-  <component name="ProjectColorInfo">{
-  &quot;associatedIndex&quot;: 1
-}</component>
-  <component name="ProjectId" id="36U9Upqk2rWqVwFQlGdImQNFKkB" />
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 3
+}]]></component>
+  <component name="ProjectId" id="37WE2H5lQUovgbaNY92G0AH5thY" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -31,11 +29,7 @@
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "git-widget-placeholder": "main",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/Malte/Documents/GitHub/Compilerbau_Sem_03/Blatt_04",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
+    "last_opened_file_path": "C:/Users/Malte/Documents/GitHub/Compilerbau_Sem_03/Blatt_03",
     "nodejs_package_manager_path": "npm",
     "vue.rearranger.settings.migration": "true"
   }
@@ -50,13 +44,12 @@
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="6f58e9c4-e5f0-4b9a-ac1b-fce9b5ccdbc3" name="Changes" comment="" />
-      <created>1765050301940</created>
+      <changelist id="73ab10b4-dcb9-482d-b2e6-99c1007fc334" name="Changes" comment="" />
+      <created>1767010219331</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1765050301940</updated>
-      <workItem from="1765050303332" duration="578000" />
-      <workItem from="1767010191863" duration="25000" />
+      <updated>1767010219331</updated>
+      <workItem from="1767010220423" duration="41000" />
     </task>
     <servers />
   </component>

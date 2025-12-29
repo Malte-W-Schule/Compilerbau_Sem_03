@@ -1,4 +1,4 @@
-grammar cplusplus;
+grammar Cplusplus;
 
 //#inlcude == kommentar
 //kommentar == //
