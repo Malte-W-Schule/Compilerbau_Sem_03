@@ -18,7 +18,7 @@ public class Main {
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         CplusplusParser parser = new CplusplusParser(tokens);
 
-        ParseTree tree = parser.programm();
+        ParseTree tree = parser.program();
         System.out.println(tree.toStringTree(parser));
     }
 }

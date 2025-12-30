@@ -2,9 +2,17 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="6dce21f1-2189-4e9a-b613-b0ef2d52febf" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/../Blatt_06/blatt6/src/ASTHelper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Blatt_06/blatt6/src/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/../Blatt_06/blatt6/src/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Blatt_03/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../Blatt_03/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Blatt_04/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../Blatt_04/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Final_Task/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../Final_Task/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Final_Task/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../Final_Task/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Final_Task/src/main/java/org/example/ASTNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/../Final_Task/src/main/java/org/example/ASTNode.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Final_Task/src/main/java/org/example/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/../Final_Task/src/main/java/org/example/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Final_Task/src/main/java/org/example/antlr/Cplusplus.g4" beforeDir="false" afterPath="$PROJECT_DIR$/../Final_Task/src/main/java/org/example/antlr/Cplusplus.g4" afterDir="false" />
     </list>
+    <list id="2639a286-af9c-411b-89dc-d3f4414e7ebc" name="Changes by Sarah Kirchhof" comment="" />
+    <list id="90eb776a-e44f-40cd-b2c7-bd18df9328fc" name="Changes by wessl" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -13,10 +21,10 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "customColor": "",
-  "associatedIndex": 7
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 7
+}</component>
   <component name="ProjectId" id="36QXoLEz98kY7H8rEm9FIzrqzNe" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -27,16 +35,19 @@
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "git-widget-placeholder": "main",
     "kotlin-language-version-configured": "true",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.27397.103" />
-        <option value="bundled-js-predefined-d6986cc7102b-3aa1da707db6-JavaScript-IU-252.27397.103" />
+        <option value="bundled-jdk-30f59d01ecdd-cffe25b9f5b3-intellij.indexing.shared.core-IU-253.28294.334" />
+        <option value="bundled-js-predefined-d6986cc7102b-c7e53b3be11b-JavaScript-IU-253.28294.334" />
       </set>
     </attachedChunks>
   </component>
@@ -48,6 +59,10 @@
       <option name="presentableId" value="Default" />
       <updated>1764939944769</updated>
       <workItem from="1764939945946" duration="27000" />
+      <workItem from="1767096419531" duration="25000" />
+      <workItem from="1767096471630" duration="11000" />
+      <workItem from="1767097296101" duration="263000" />
+      <workItem from="1767102273983" duration="21000" />
     </task>
     <servers />
   </component>

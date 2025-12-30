@@ -6,7 +6,7 @@ grammar Cplusplus;
 //#(Präprozessor) == Kommentar
 
 // === Programm ===
-programm: stmt+ EOF;
+program: stmt+ EOF;
 
 // === Statement ===
 stmt: if_stmt
@@ -45,7 +45,7 @@ f_decl: 'virtual'? type ID parameter_decl (block|';');
 f_call: ID parameter_call ';';
 // === Parameter ===
 parameter_decl:  LBRACK ( type ID (','type ID)* )? RBRACK;
-parameter_call:  LBRACK (  ID (',' ID)* )? RBRACK;
+parameter_call:  LBRACK (  expr (',' expr)* )? RBRACK;
 
 /*
 // === Logic Operation ===
@@ -88,7 +88,7 @@ block : CLBRACK stmt* return? CRBRACK;
 return: ('return' expr)? ';';
 // === IF ===
 //if( statement){ then block, else block }
-if_stmt: IF LBRACK (com_expr)+ RBRACK then_block (else_block)?;
+if_stmt: IF LBRACK com_expr RBRACK then_block (else_block)?;
 //else block
 else_block: ELSE block;
 //then block
