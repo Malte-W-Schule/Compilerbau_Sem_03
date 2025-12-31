@@ -25,7 +25,7 @@ stmt: if_stmt
 // === Expression ===
 //expression / value
 expr: LBRACK expr RBRACK            #grouping
-    | expr ('*' | '/' | '%') expr   #point_expr
+    | expr ('*' | '/' | '%') expr   #point_expr //todo aufteilen der CalcExpr nach Mul_Expr, Div_Expr, usw...
     | expr ('+' | '-') expr         #line_expr
     | atom                          #atom_expr
     ;

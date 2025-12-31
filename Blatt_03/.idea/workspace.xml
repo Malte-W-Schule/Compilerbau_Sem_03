@@ -2,9 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="73ab10b4-dcb9-482d-b2e6-99c1007fc334" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../Final_Task/src/main/java/org/example/ASTGenerator.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../Blatt_04/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../Blatt_04/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Blatt_05/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../Blatt_05/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Final_Task/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../Final_Task/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Final_Task/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../Final_Task/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../Final_Task/src/main/java/org/example/ASTNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/../Final_Task/src/main/java/org/example/ASTNode.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Final_Task/src/main/java/org/example/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/../Final_Task/src/main/java/org/example/Main.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -52,6 +55,7 @@
       <updated>1767010219331</updated>
       <workItem from="1767010220423" duration="41000" />
       <workItem from="1767096484830" duration="30000" />
+      <workItem from="1767184999489" duration="7000" />
     </task>
     <servers />
   </component>

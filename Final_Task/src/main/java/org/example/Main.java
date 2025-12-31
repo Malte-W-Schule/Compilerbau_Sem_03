@@ -12,13 +12,19 @@ import org.example.antlr.CplusplusParser;
 public class Main {
     public static void main(String[] args) {
 
+
+
         CharStream input = CharStreams.fromString("int x = 5;");
 
         CplusplusLexer lexer = new CplusplusLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
-        CplusplusParser parser = new CplusplusParser(tokens);
 
+        CplusplusParser parser = new CplusplusParser(tokens);
         ParseTree tree = parser.program();
+
         System.out.println(tree.toStringTree(parser));
+
+        ASTGenerator generator = new ASTGenerator();
+        ASTNode meinEigenerAST = generator.visit(tree);
     }
 }
