@@ -25,8 +25,11 @@ stmt: if_stmt
 // === Expression ===
 //expression / value
 expr: LBRACK expr RBRACK            #grouping
-    | expr ('*' | '/' | '%') expr   #point_expr //todo aufteilen der CalcExpr nach Mul_Expr, Div_Expr, usw...
-    | expr ('+' | '-') expr         #line_expr
+    | expr ('*') expr               #mul_expr
+    | expr ('/') expr               #div_expr
+    | expr ('%') expr               #mod_expr
+    | expr ('+') expr               #add_expr
+    | expr ('-') expr               #sub_expr
     | atom                          #atom_expr
     ;
 
@@ -40,7 +43,7 @@ constructor_decl: ID parameter_decl block;
 // === Function Declaration ===
 // void cast(type parameter1,...) { body (return*) }
 // Class::Methode(){}
-f_decl: 'virtual'? type ID parameter_decl (block|';');
+f_decl: VIRTUAL? type ID parameter_decl (block|';');
 // === Function Call ===
 f_call: ID parameter_call ';';
 // === Parameter ===
@@ -205,6 +208,7 @@ INT     :   [0-9]+;
 CHAR    :   '\'' . '\'';
 
 // === Literal ===
+//z.B.: \n, \0 usw...
 LITERAL :   '\'' '\\'. '\'';
 
 // === Token ===

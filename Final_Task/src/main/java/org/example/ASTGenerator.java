@@ -1,13 +1,10 @@
 package org.example;
 
-import org.antlr.v4.runtime.RuleContext;
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.TerminalNode;
 import org.example.antlr.CplusplusBaseVisitor;
 import org.example.antlr.CplusplusParser;
-import org.example.antlr.CplusplusVisitor;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
 
@@ -32,29 +29,66 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
         return visitChildren(ctx);
     }
 
-
     @Override
     public ASTNode visitConstructor_call(CplusplusParser.Constructor_callContext ctx) {
         return visitChildren(ctx);
     }
-
 
     @Override
     public ASTNode visitConstructor_decl(CplusplusParser.Constructor_declContext ctx) {
         return visitChildren(ctx);
     }
 
-
     @Override
     public ASTNode visitF_decl(CplusplusParser.F_declContext ctx) {
-        return visitChildren(ctx);
+        //boolean virtual
+        boolean virtual = false;
+        if(ctx.VIRTUAL() != null){
+            virtual = true;
+        }
+        Type t = (Type) visit(ctx);
+        IDNode id = (IDNode) visit(ctx);
+        //boolean and& = (boolean) visit(ctx);//todo
+        ParamNodeDecl params = (ParamNodeDecl) visit(ctx.parameter_decl());
+        BlockNode block = (BlockNode) visit(ctx.block());
+        return new FDeclNode(virtual, t, id, params, block);
     }
-
 
     @Override
     public ASTNode visitF_call(CplusplusParser.F_callContext ctx) {
-        return visitChildren(ctx);
+        //FCallNode(IDNode id, List<Expression> params
+        IDNode id = (IDNode) visit(ctx);
+        ParamNode params = (ParamNode) visit(ctx.parameter_call());
+        return new FCallNode(id,params);
     }
+
+    @Override public ASTNode visitParameter_call(CplusplusParser.Parameter_callContext ctx) {
+        List<Expression> params = new ArrayList<>();
+        for( CplusplusParser.ExprContext exprContext: ctx.expr())
+        {
+            Expression n = (Expression) visit(exprContext);
+
+            params.add(n);
+
+        }
+        return new ParamNode(params);
+    }
+
+    @Override public ASTNode visitParameter_decl(CplusplusParser.Parameter_declContext ctx) {
+        List<Type> types = new ArrayList<>();
+        List<IDNode> ids = new ArrayList<>();
+
+        for(int i = 0; i < ctx.getChildCount(); i++){
+            ids.add((IDNode) visit(ctx.ID(i)));
+            types.add((Type) visit(ctx.type(i)));
+        }
+
+        //type id
+        return new ParamNodeDecl(types, ids);
+    }
+
+
+
 
 
     @Override
@@ -89,12 +123,24 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitBool(CplusplusParser.BoolContext ctx) {
-        return visitChildren(ctx);
+        // -- not with visit v --
+        boolean b = Boolean.parseBoolean(ctx.getText());
+        return new BoolNode(b);
     }
 
     @Override
     public ASTNode visitBlock(CplusplusParser.BlockContext ctx) {
-        return visitChildren(ctx);
+        List<Statement> body = new ArrayList<>();
+        for (CplusplusParser.StmtContext stmtCtx : ctx.stmt()) {
+
+            ASTNode node = visit(stmtCtx);
+
+            if (node instanceof Statement) {
+                body.add((Statement) node);
+            }
+        }
+
+        return new BlockNode(body);
     }
 
     @Override
@@ -113,33 +159,68 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitAtom(CplusplusParser.AtomContext ctx) {
 
-
-
         if (ctx.INT() != null) {
-
+            String content = ctx.STRING().getText();
+            int i = Integer.parseInt(content);
+            return new IntegerNode(i);
         }
+        else if(ctx.bool() != null)
+        {
+            return visit(ctx.bool()) ;
+        }
+        else if (ctx.CHAR() != null) {
+            String rawText = ctx.CHAR().getText();
+            // index 1 da : 'x' , x = pos 1
+            char c = rawText.charAt(1);
+            return new CharNode(c);
+        }
+        else if(ctx.LITERAL() != null){
 
+            String rawText = ctx.CHAR().getText();
+            // index 2 da : '\x' , x = pos 2
+            char c = rawText.charAt(2);
+            return new LitNode(c);
+        }
+        else if (ctx.ID() != null) {
+            String content = ctx.ID().getText();
+            return new IDNode(content);
+        }
         else if (ctx.STRING() != null) {
             String content = ctx.STRING().getText();
-            return new StringNode(content); //todo default varibeln wie int string etc definieren(als nodes oder anders).
+            return new StringNode(content);
+            // definieren(als nodes oder anders).
         }
-        //todo potential
-        RuleContext g = ctx.getRuleContext();
-        if(g instanceof (String) ctx.STRING()){}
-        else if(g instanceof Character){}
-        else if(inhalt instanceof Boolean){}
-        else if(inhalt instanceof Integer){}
-        else{System.out.println("Nicht unterstützder Typ")}
-        return visitChildren(ctx);
+        else{
+            throw new RuntimeException("Bing Bing Bing, das haut nich hin");
+        }
     }
 
     @Override
     public ASTNode visitType(CplusplusParser.TypeContext ctx) {
-        return visitChildren(ctx);
+
+        if (ctx.getText().equals("int")) {
+            return new IntType();
+        }
+        else if (ctx.getText().equals("bool")) {
+            return new BoolType();
+        }
+        else if (ctx.getText().equals("char")) {
+            return new CharType();
+        }
+        else if (ctx.getText().equals("string")) {
+        return new StringType();
+        }
+        else if (ctx.getText().equals("void")) {
+            return new VoidType();
+        }
+        else{
+            throw new RuntimeException("Bing Bing Bing, das haut nich hin");
+        }
     }
 
     @Override
     public ASTNode visitDecl(CplusplusParser.DeclContext ctx) {
+
         return visitChildren(ctx);
     }
 
@@ -149,15 +230,33 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
     }
     //mehr?
 
+    public ASTNode visitGrouping(CplusplusParser.GroupingContext ctx) { return visitChildren(ctx); }
 
-    public ASTNode visitExpr(CplusplusParser.ProgramContext ctx) {
-        //expr: LBRACK expr RBRACK            #grouping
-        //    | expr ('*' | '/' | '%') expr   #point_expr
-        //    | expr ('+' | '-') expr         #line_expr
-        //    | atom                          #atom_expr
-        //    ;
+    public ASTNode visitMul_expr(CplusplusParser.Mul_exprContext ctx) {
+        Expression child1 = (Expression) visit(ctx.expr(0));
+        Expression child2 = (Expression) visit(ctx.expr(1));
+        return new ExprNode("*", child1, child2);
+    }
+    public ASTNode visitDiv_expr(CplusplusParser.Div_exprContext ctx) {
+        Expression child1 = (Expression) visit(ctx.expr(0));
+        Expression child2 = (Expression) visit(ctx.expr(1));
+        return new ExprNode("/", child1, child2);
+    }
 
+    public ASTNode visitMod_expr(CplusplusParser.Mod_exprContext ctx) {
+        Expression child1 = (Expression) visit(ctx.expr(0));
+        Expression child2 = (Expression) visit(ctx.expr(1));
+        return new ExprNode("%", child1, child2);
+    }
 
-        return null;
+    public ASTNode visitAdd_expr(CplusplusParser.Add_exprContext ctx) {
+        Expression child1 = (Expression) visit(ctx.expr(0));
+        Expression child2 = (Expression) visit(ctx.expr(1));
+        return new ExprNode("+", child1, child2);
+    }
+    public ASTNode visitSub_expr(CplusplusParser.Sub_exprContext ctx) {
+        Expression child1 = (Expression) visit(ctx.expr(0));
+        Expression child2 = (Expression) visit(ctx.expr(1));
+        return new ExprNode("-", child1, child2);
     }
 }

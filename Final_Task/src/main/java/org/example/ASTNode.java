@@ -12,17 +12,22 @@ interface Expression extends ASTNode {
   //   String toExpressionession();
 }
 
-record IDNode(String name){}
+record IDNode(String name) implements Expression, Type, ASTNode{}
 
-// === Type Werte (int ...) ===
+// === Typen ===
+interface Type extends ASTNode {}
+record IntType() implements Type {}
+record BoolType() implements Type {}
+record CharType() implements Type {}
+record StringType() implements Type {}
+record VoidType() implements Type {}
 
-interface Type{}
-
-record IntegerNode(Expression value) implements Expression, Type, ASTNode{}
-record StringNode(Expression value) implements Expression, Type, ASTNode{}
-record BoolNode(Expression value) implements Expression, Type, ASTNode{}
-record CharNode(Expression value) implements Expression, Type, ASTNode{}
-
+// === Werte ===
+record IntegerNode(int value) implements Expression, ASTNode{}
+record StringNode(String value) implements Expression,  ASTNode{}
+record BoolNode(boolean value) implements Expression, ASTNode{}
+record CharNode(char value) implements Expression, ASTNode{}
+record LitNode(char value)implements ASTNode{}
 // === Variabel (Declaration, Initialisation...) ===
 record DeclNode(Type type, IDNode name, boolean and) implements Statement, ASTNode{}
 record InitNode(Type type, IDNode name, boolean and, Expression value) implements Statement, ASTNode{}
@@ -53,8 +58,11 @@ record IfNode(ComNode com, BlockNode thenBlock, BlockNode elseBlock )implements 
 record WhileNode(ComNode com, BlockNode block) implements ASTNode{}
 
 // === Function ===
-record FDeclNode(boolean virtual, Type type, IDNode id, List<Expression> params, BlockNode block) implements ASTNode {}
-record FCallNode(IDNode id, List<Expression> params) implements ASTNode{}
+record FDeclNode(boolean virtual, Type type, IDNode id, ParamNodeDecl params, BlockNode block) implements ASTNode {}
+record FCallNode(IDNode id, ParamNode params) implements ASTNode{}
+record ParamNode(List<Expression> params)implements ASTNode{}
+
+record ParamNodeDecl(List<Type> types,List<IDNode> ids)implements ASTNode{}
 
 // === Class ===
 record CDeclNode(IDNode name, List<FDeclNode> functions,BlockNode constructor) implements ASTNode{}
@@ -63,7 +71,7 @@ record CDeclNode(IDNode name, List<FDeclNode> functions,BlockNode constructor) i
 record MCall(IDNode clars, IDNode fName, List<Expression> params) implements ASTNode{}
 
 // ===Expression ===
-record CalcTypeNode(String value)implements ASTNode{}
+//record CalcTypeNode(String value) implements ASTNode{}
 /*enum CalcType{
         Mul,
         Div,
@@ -72,4 +80,6 @@ record CalcTypeNode(String value)implements ASTNode{}
         Sub,
         }*/
         
-record ExprNode(CalcTypeNode calc, ExprNode left, ExprNode right) implements ASTNode{}
+record ExprNode(String value, Expression left, Expression right) implements ASTNode, Expression{}
+//ExprNode(+, ExprNode (null,5, ExprNode (-,4, 3))
+//5+4-3
