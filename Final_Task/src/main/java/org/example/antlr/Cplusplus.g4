@@ -43,11 +43,12 @@ constructor_decl: ID parameter_decl block;
 // === Function Declaration ===
 // void cast(type parameter1,...) { body (return*) }
 // Class::Methode(){}
-f_decl: VIRTUAL? type ID parameter_decl (block|';');
+f_decl: VIRTUAL? type AND? ID parameter_decl (block|';');
 // === Function Call ===
 f_call: ID parameter_call ';';
 // === Parameter ===
-parameter_decl:  LBRACK ( type ID (','type ID)* )? RBRACK;
+parameter_decl:  LBRACK ( parameter (',' parameter)* )? RBRACK;
+parameter : type AND? ID;
 parameter_call:  LBRACK (  expr (',' expr)* )? RBRACK;
 
 /*
@@ -75,10 +76,10 @@ com_expr
     ;
 
 // Die Ebene für einzelne Werte, Klammern und Negationen
-primary_expr
-    : (NEGATE)? atom
-    | (NEGATE)? LBRACK com_expr RBRACK
-    | (NEGATE)? LBRACK expr RBRACK
+primary_expr //todo nich gut, überarbeiten im bezug auf verschachtelung/negierung
+    : //(NEGATE)? atom doppelt gemoppelt weil expr führt zu atom
+    | (NEGATE)? LBRACK com_expr RBRACK //prim == !(prim == prim)
+    | //(NEGATE)? LBRACK expr RBRACK
     | (NEGATE)? expr
     ;
 
@@ -88,7 +89,7 @@ bool    :   'true' | 'false';
 // === Block ===
 block : CLBRACK stmt* return? CRBRACK;
 
-return: ('return' expr)? ';';
+return: 'return' expr ';';
 // === IF ===
 //if( statement){ then block, else block }
 if_stmt: IF LBRACK com_expr RBRACK then_block (else_block)?;
@@ -109,7 +110,6 @@ atom: STRING
     | bool
     ;
 
-
 // === Type ===
 type: 'string'
     | 'int'
@@ -119,11 +119,11 @@ type: 'string'
     ;
 
 // === Declaration ===
-decl     :    type  '&'?  ID ';' ;
+decl     :    type  AND?  ID ';' ;
 // int& int int &
 
 // === Initialisation ===
-init    :   type '&'? ID ASS expr ';';
+init    :   type AND? ID ASS expr ';';
 
 // === Assign ===
 //assign    zuweisung
@@ -223,6 +223,8 @@ CLASS   :   'class';
 VOID    :   'void';
 
 VIRTUAL :   'virtual';
+AND     :   '&';
+
 
 // === Brackets ===
 // left/right brackets
