@@ -12,9 +12,10 @@ import org.example.antlr.CplusplusParser;
 public class Main {
     public static void main(String[] args) {
 
-
+        String s ="int i =1;";
+        String com = "class Animal{};";
         String complexCode =
-                "class Animal {" +
+                        "class Animal {" +
                         "  public:" +
                         "    virtual void makeSound() {" +
                         "        int volume = 10;" +
@@ -51,5 +52,7 @@ public class Main {
 
         ASTGenerator generator = new ASTGenerator();
         ASTNode meinEigenerAST = generator.visit(tree);
+        //System.out.println(tree.toStringTree(meinEigenerAST));
+        //System.out.println(meinEigenerAST);
     }
 }

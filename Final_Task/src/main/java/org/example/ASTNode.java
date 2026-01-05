@@ -1,8 +1,15 @@
 package org.example;
 
+import com.sun.nio.sctp.AbstractNotificationHandler;
+
 import java.util.List;
 
 public interface ASTNode {
+
+    default void A()
+    {
+        System.out.println(this);
+    }
 }
 
 interface Statement extends ASTNode {}
@@ -16,6 +23,7 @@ record IDNode(String name) implements Expression, Type, ASTNode{}
 
 // === Typen ===
 interface Type extends ASTNode {}
+record ProgramNode(List<Statement> statements) implements ASTNode{}
 record IntType() implements Type {}
 record BoolType() implements Type {}
 record CharType() implements Type {}
@@ -34,16 +42,16 @@ record InitNode(Type type, IDNode name, boolean and, Expression value) implement
 record AssiNode(IDNode name, Expression value) implements Statement, ASTNode{}
 
 // === IF WHILE ... ===
-record BlockNode(List<Statement> body) implements ASTNode{}
+record BlockNode(List<Statement> body) implements ASTNode,Statement{}
 
 // prim1 comp1 prim2 comp2 prim3
 //prim
 
 //record ComTypeNode(String value) implements ASTNode{}
 record PrimExprNode(boolean negate, Expression expr) implements ASTNode{}
-record ComNode(List<PrimExprNode> primExprs , List<String> values) implements ASTNode, Expression{}
+//record ComNode(List<PrimExprNode> primExprs , List<String> values) implements ASTNode, Expression{}
 
-//record NestedComNode(PrimExprNode primNode, ComTypeNode comNode) implements ASTNode{} //todo vielleicht verschachtelt?
+//record NestedComNode(PrimExprNode primNode, ComTypeNode comNode) implements ASTNode{}
 
 /*
 enum CompType{
@@ -57,23 +65,24 @@ enum CompType{
         Or
 }*/
 
-record IfNode(ComNode com, BlockNode thenBlock, BlockNode elseBlock )implements Statement, ASTNode{}
-record WhileNode(ComNode com, BlockNode block) implements ASTNode{}
+record IfNode(Expression com, BlockNode thenBlock, BlockNode elseBlock )implements Statement, ASTNode{}
+record WhileNode(Expression com, BlockNode block) implements ASTNode,Statement{}
 
 // === Function ===
-record FDeclNode(boolean virtual, Type type, boolean and, IDNode id, ParamNodeDecl params, BlockNode block) implements ASTNode {}
-record FCallNode(IDNode id, ParamNode params) implements ASTNode{}
+record FDeclNode(boolean virtual, Type type, boolean and, IDNode id, ParamNodeDecl params, BlockNode block) implements ASTNode,Statement {}
+record FCallNode(IDNode id, ParamNode params) implements ASTNode,Statement{}
 record ParamNode(List<Expression> params)implements ASTNode{}
 
 record ParamNodeDecl(List<SingleParamNode> params)implements ASTNode{}
 record SingleParamNode(Type t, boolean and, IDNode id) implements ASTNode {}
 // === Class ===
-record CDeclNode(IDNode name, List<FDeclNode> functions,ConDeclNode constructor) implements ASTNode{}
+record CDeclNode(IDNode name, List<FDeclNode> functions,ConDeclNode constructor) implements ASTNode,Statement{}
 // constructor
-record ConDeclNode(IDNode name,BlockNode block) implements ASTNode{};
+record ConDeclNode(IDNode name,BlockNode block) implements ASTNode,Statement{};
+record ConCallNode(IDNode name) implements ASTNode,Statement{}
 
 // === Method Call from class ===
-record MCall(IDNode clars, IDNode fName, List<Expression> params) implements ASTNode{}
+record MCall(IDNode clars, IDNode fName, List<Expression> params) implements ASTNode,Statement{}
 
 // ===Expression ===
 //record CalcTypeNode(String value) implements ASTNode{}

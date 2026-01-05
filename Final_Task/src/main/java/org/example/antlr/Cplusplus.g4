@@ -24,15 +24,24 @@ stmt: if_stmt
 
 // === Expression ===
 //expression / value
-expr: LBRACK expr RBRACK            #grouping
-    | expr ('*') expr               #mul_expr
-    | expr ('/') expr               #div_expr
-    | expr ('%') expr               #mod_expr
-    | expr ('+') expr               #add_expr
-    | expr ('-') expr               #sub_expr
-    | atom                          #atom_expr
+expr: (NEGATE)? LBRACK expr RBRACK            #grouping
+    | expr ('*') expr                         #mul_expr
+    | expr ('/') expr                         #div_expr
+    | expr ('%') expr                         #mod_expr
+    | expr ('+') expr                         #add_expr
+    | expr ('-') expr                         #sub_expr
+    | expr ('==') expr                        #doubleEqual
+    | expr ('!=') expr                        #notEqual
+    | expr ('<') expr                         #lessThen
+    | expr ('>') expr                         #greaterThen
+    | expr ('<=') expr                        #lessOrEqual
+    | expr ('>=') expr                        #greaterOrEqual
+    | expr ('&&') expr                        #and
+    | expr ('||') expr                        #or
+    | (NEGATE)? atom                          #atom_expr
     ;
 
+//a<b<c
 //Parameterloser Konstruktor und weitere Konstruktoren (jeweils ohne Initialisierungslisten), Verwendung nur als T x; (ruft T() auf) oder T x = T(args); (kein direkter Aufruf T x(args);!)
 constructor_call: ID ID';';
 // T x; (ruft T()
@@ -71,7 +80,7 @@ com_expr: com_expr COMP com_expr
 */
 
 // Die Hauptebene für Vergleiche
-com_expr
+/*com_expr
     : primary_expr (COMP primary_expr)*
     ;
 
@@ -81,7 +90,7 @@ primary_expr //todo nich gut, überarbeiten im bezug auf verschachtelung/negieru
     | (NEGATE)? LBRACK com_expr RBRACK //prim == !(prim == prim)
     | //(NEGATE)? LBRACK expr RBRACK
     | (NEGATE)? expr
-    ;
+    ;*/
 
 // === Bool ===
 bool    :   'true' | 'false';
@@ -92,14 +101,14 @@ block : CLBRACK stmt* return? CRBRACK;
 return: 'return' expr ';';
 // === IF ===
 //if( statement){ then block, else block }
-if_stmt: IF LBRACK com_expr RBRACK then_block (else_block)?;
+if_stmt: IF LBRACK expr RBRACK then_block (else_block)?;
 //else block
 else_block: ELSE block;
 //then block
 then_block: block;
 
 // === while ===:
-while_stmt: WHILE LBRACK com_expr RBRACK block;
+while_stmt: WHILE LBRACK expr RBRACK block;
 
 //
 atom: STRING
