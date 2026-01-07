@@ -278,8 +278,12 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
 
         if (ctx.INT() != null) {
             String content = ctx.INT().getText();
+            String sign = null;
+            if(ctx.SIGN() != null){
+                sign = ctx.SIGN().getText();
+            }
             int i = Integer.parseInt(content);
-            return new IntegerNode(i);
+            return new IntegerNode(sign, i);
         }
         else if(ctx.bool() != null)
         {

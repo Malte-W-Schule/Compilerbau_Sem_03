@@ -20,6 +20,7 @@ stmt: if_stmt
     | constructor_call
     | constructor_decl
     | class_decl
+    | block
     ;
 
 // === Expression ===
@@ -38,7 +39,7 @@ expr: (NEGATE)? LBRACK expr RBRACK            #grouping
     | expr ('>=') expr                        #greaterOrEqual
     | expr ('&&') expr                        #and
     | expr ('||') expr                        #or
-    | (NEGATE)? atom                          #atom_expr
+    | (NEGATE)?   atom                        #atom_expr //todo was ist mit Vorzeichen?
     ;
 
 //a<b<c
@@ -98,7 +99,7 @@ bool    :   'true' | 'false';
 // === Block ===
 block : CLBRACK stmt* return? CRBRACK;
 
-return: 'return' expr ';';
+return: RETURN expr ';';
 // === IF ===
 //if( statement){ then block, else block }
 if_stmt: IF LBRACK expr RBRACK then_block (else_block)?;
@@ -113,7 +114,7 @@ while_stmt: WHILE LBRACK expr RBRACK block;
 //
 atom: STRING
     | CHAR
-    | INT
+    | SIGN? INT
     | ID
     | LITERAL
     | bool
@@ -193,7 +194,7 @@ Nur lokale Variablen (keine globalen Variablen)
 LOP     :   '+'|'-'|'*'|'/'|'%';
 PLOP    :   '*'|'/';
 LLOP    :   '+'|'-'|'%';
-
+SIGN    :   '+'|'-';
 // === Assign ===
 // Zuweisung: =
 ASS     :   '=';
@@ -233,6 +234,7 @@ VOID    :   'void';
 
 VIRTUAL :   'virtual';
 AND     :   '&';
+RETURN  :   'return';
 
 
 // === Brackets ===

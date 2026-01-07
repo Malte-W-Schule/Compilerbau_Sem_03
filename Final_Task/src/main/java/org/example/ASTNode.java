@@ -31,15 +31,15 @@ record StringType() implements Type {}
 record VoidType() implements Type {}
 
 // === Werte ===
-record IntegerNode(int value) implements Expression, ASTNode{}
+record IntegerNode(String plusMinusSign, int value) implements Expression, ASTNode{}
 record StringNode(String value) implements Expression,  ASTNode{}
 record BoolNode(boolean value) implements Expression, ASTNode{}
 record CharNode(char value) implements Expression, ASTNode{}
 record LitNode(char value)implements ASTNode{}
 // === Variabel (Declaration, Initialisation...) ===
-record DeclNode(Type type, IDNode name, boolean and) implements Statement, ASTNode{}
-record InitNode(Type type, IDNode name, boolean and, Expression value) implements Statement, ASTNode{}
-record AssiNode(IDNode name, Expression value) implements Statement, ASTNode{}
+record DeclNode(Type type, IDNode id, boolean and) implements Statement, ASTNode{}
+record InitNode(Type type, IDNode id, boolean and, Expression value) implements Statement, ASTNode{}
+record AssiNode(IDNode id, Expression value) implements Statement, ASTNode{}
 
 // === IF WHILE ... ===
 record BlockNode(List<Statement> body) implements ASTNode,Statement{}
@@ -94,7 +94,7 @@ record MCall(IDNode clars, IDNode fName, List<Expression> params) implements AST
         Sub,
         }*/
         
-record ExprNode(String value, Expression left, Expression right) implements ASTNode, Expression{}
+record ExprNode(String operator, Expression left, Expression right) implements ASTNode, Expression{}
 //ExprNode(+, ExprNode (null,5, ExprNode (-,4, 3))
 //5+4-3
 record ReturnNode(Expression value) implements ASTNode {}
