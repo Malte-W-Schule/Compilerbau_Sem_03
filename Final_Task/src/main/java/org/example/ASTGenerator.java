@@ -25,21 +25,9 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
 
         String name = ctx.ID().toString();
         IDNode id = new IDNode(name);
-        ConDeclNode constructor = null;
-        List<FDeclNode> functions = new ArrayList<>();
 
-        for(CplusplusParser.StmtContext stmtContext: ctx.stmt()){
-            ASTNode node = visit(stmtContext);
-            if (node instanceof FDeclNode) {
-                functions.add((FDeclNode) node);
-            }
-            else if (node instanceof ConDeclNode) {
-                constructor = (ConDeclNode) node;
-            }
-            //evtl noch auf variablen und klassenattribute checken
-
-        }
-        return new CDeclNode(id, functions, constructor);
+        CBlockNode block = (CBlockNode) visit(ctx.class_block());
+        return new CDeclNode(id, block);
     }
 
     @Override public ASTNode visitM_call(CplusplusParser.M_callContext ctx) {
@@ -95,11 +83,6 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
     }
 
     @Override
-    public ASTNode visitAtom_expr(CplusplusParser.Atom_exprContext ctx) {
-        return visitChildren(ctx);
-    }
-
-    @Override
     public ASTNode visitConstructor_call(CplusplusParser.Constructor_callContext ctx) {
 
         String name = ctx.ID(0).getText();
@@ -133,8 +116,12 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
              and = true;
         }
         ParamNodeDecl params = (ParamNodeDecl) visit(ctx.parameter_decl());
-        BlockNode block = (BlockNode) visit(ctx.block());
+        FBlockNode block = (FBlockNode) visit(ctx.block());
         return new FDeclNode(virtual, t, and, id, params, block);
+    }
+
+    @Override public ASTNode visitF_block(CplusplusParser.F_blockContext ctx) {
+        return visitChildren(ctx);
     }
 
     @Override
@@ -187,11 +174,10 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
         return new SingleParamNode(t, and, id);
     }
 
-
     @Override
     public ASTNode visitIf_stmt(CplusplusParser.If_stmtContext ctx) {
         //ComNode com = (ComNode) visit(ctx.expr()); mit ComNode?
-        Expression com = (Expression) visit(ctx.expr());
+        Expression com = (Expression) visit(ctx.logExpr());
         BlockNode thenblock = (BlockNode) visit(ctx.then_block());
         BlockNode elseBlock = null;
         if (ctx.else_block() != null) {
@@ -268,7 +254,7 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitWhile_stmt(CplusplusParser.While_stmtContext ctx) {
-        Expression com = (Expression) visit(ctx.expr()); //todo nur expresion?
+        Expression com = (Expression) visit(ctx.logExpr());
         BlockNode block = (BlockNode) visit(ctx.block());
         return new WhileNode(com, block);
     }
@@ -319,7 +305,11 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitType(CplusplusParser.TypeContext ctx) {
 
-        if (ctx.getText().equals("int")) {
+        if(ctx.ID()!=null){
+            IDNode id = (IDNode) visit(ctx.ID());
+            return id;
+        }
+        else if (ctx.getText().equals("int")) {
             return new IntType();
         }
         else if (ctx.getText().equals("bool")) {
@@ -360,91 +350,98 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
         Type t = (Type) visit(ctx.type());
         String name = ctx.ID().getText();
         IDNode id = new IDNode(name);
-        checkForLogicalOperator(ctx.expr()); //überprüft ob Expr eine logische Operation ist
+        //checkForLogicalOperator(ctx.expr()); //überprüft ob Expr eine logische Operation ist
         Expression expr = (Expression)visit(ctx.expr());
 
         return new InitNode(t, id, and, expr);
     }
 
     public ASTNode visitAssign(CplusplusParser.AssignContext ctx) {
-        String name = ctx.ID().getText();
-        IDNode id = new IDNode(name);
-        checkForLogicalOperator(ctx.expr());  //überprüft ob Expr eine logische Operation ist
+        IDNode objectId = null;
+        IDNode id = null;
+        int i = 0;
+        if(ctx.ID().size()>1)
+        {
+            objectId = new IDNode(ctx.ID(i).getText());
+            i++;
+        }
+        id = new IDNode(ctx.ID(i).getText());
+        //checkForLogicalOperator(ctx.expr());  //überprüft ob Expr eine logische Operation ist
         Expression value = (Expression) visit(ctx.expr());
-        return new AssiNode(id, value);
+        return new AssiNode(objectId,id, value);
     }
-
-
-    public ASTNode visitGrouping(CplusplusParser.GroupingContext ctx) { return visitChildren(ctx); }
 
     // ==== arithmetic expressions ===
     public ASTNode visitMul_expr(CplusplusParser.Mul_exprContext ctx) {
-        Expression child1 = (Expression) visit(ctx.expr(0));
-        Expression child2 = (Expression) visit(ctx.expr(1));
-        return new ExprNode("*", child1, child2);
+        Expression child1 = (Expression) visit(ctx.ae1);
+        Expression child2 = (Expression) visit(ctx.ae2);
+        return new ArithmetischeExpressionNode(child1, "*", child2);
     }
     public ASTNode visitDiv_expr(CplusplusParser.Div_exprContext ctx) {
-        Expression child1 = (Expression) visit(ctx.expr(0));
-        Expression child2 = (Expression) visit(ctx.expr(1));
-        return new ExprNode("/", child1, child2);
+        Expression child1 = (Expression) visit(ctx.ae1);
+        Expression child2 = (Expression) visit(ctx.ae2);
+        return new ArithmetischeExpressionNode(child1,"/", child2);
     }
 
     public ASTNode visitMod_expr(CplusplusParser.Mod_exprContext ctx) {
-        Expression child1 = (Expression) visit(ctx.expr(0));
-        Expression child2 = (Expression) visit(ctx.expr(1));
-        return new ExprNode("%", child1, child2);
+        Expression child1 = (Expression) visit(ctx.ae1);
+        Expression child2 = (Expression) visit(ctx.ae2);
+        return new ArithmetischeExpressionNode(child1, "%", child2);
     }
 
     public ASTNode visitAdd_expr(CplusplusParser.Add_exprContext ctx) {
-        Expression child1 = (Expression) visit(ctx.expr(0));
-        Expression child2 = (Expression) visit(ctx.expr(1));
-        return new ExprNode("+", child1, child2);
+        Expression child1 = (Expression) visit(ctx.ae1);
+        Expression child2 = (Expression) visit(ctx.ae2);
+        return new ArithmetischeExpressionNode(child1,"+", child2);
     }
     public ASTNode visitSub_expr(CplusplusParser.Sub_exprContext ctx) {
-        Expression child1 = (Expression) visit(ctx.expr(0));
-        Expression child2 = (Expression) visit(ctx.expr(1));
-        return new ExprNode("-", child1, child2);
+        Expression child1 = (Expression) visit(ctx.ae1);
+        Expression child2 = (Expression) visit(ctx.ae2);
+        return new ArithmetischeExpressionNode(child1, "-", child2);
     }
 
     // ==== compare expressions ====
     public ASTNode visitOr(CplusplusParser.OrContext ctx) {
-        Expression child1 = (Expression) visit(ctx.expr(0));
-        Expression child2 = (Expression) visit(ctx.expr(1));
-        return new ExprNode("||", child1, child2); }
-    public ASTNode visitAnd(CplusplusParser.AndContext ctx) { Expression child1 = (Expression) visit(ctx.expr(0));
-        Expression child2 = (Expression) visit(ctx.expr(1));
-        return new ExprNode("&&", child1, child2);}
+        Expression child1 = (Expression) visit(ctx.le1);
+        Expression child2 = (Expression) visit(ctx.le2);
+        return new LogischeExpressionNode(child1, "||", child2); }
+
+    public ASTNode visitAnd(CplusplusParser.AndContext ctx) {
+        Expression child1 = (Expression) visit(ctx.le1);
+        Expression child2 = (Expression) visit(ctx.le2);
+        return new LogischeExpressionNode(child1, "&&", child2);}
 
     public ASTNode visitDoubleEqual(CplusplusParser.DoubleEqualContext ctx) {
-        Expression child1 = (Expression) visit(ctx.expr(0));
-        Expression child2 = (Expression) visit(ctx.expr(1));
-        return new ExprNode("==", child1, child2);
+        Expression child1 = (Expression) visit(ctx.le1);
+        Expression child2 = (Expression) visit(ctx.le2);
+        return new LogischeExpressionNode(child1, "==", child2);
     }
     public ASTNode visitNotEqual(CplusplusParser.NotEqualContext ctx) {
-        Expression child1 = (Expression) visit(ctx.expr(0));
-        Expression child2 = (Expression) visit(ctx.expr(1));
-        return new ExprNode("!=", child1, child2); }
+        Expression child1 = (Expression) visit(ctx.le1);
+        Expression child2 = (Expression) visit(ctx.le2);
+        return new LogischeExpressionNode(child1, "!=", child2); }
 
     public ASTNode visitLessThen(CplusplusParser.LessThenContext ctx) {
-        Expression child1 = (Expression) visit(ctx.expr(0));
-        Expression child2 = (Expression) visit(ctx.expr(1));
-        return new ExprNode("<", child1, child2);
+        Expression child1 = (Expression) visit(ctx.le1);
+        Expression child2 = (Expression) visit(ctx.le2);
+        return new LogischeExpressionNode(child1, "<", child2);
     }
     public ASTNode visitLessOrEqual(CplusplusParser.LessOrEqualContext ctx) {
-        Expression child1 = (Expression) visit(ctx.expr(0));
-        Expression child2 = (Expression) visit(ctx.expr(1));
-        return new ExprNode("<=", child1, child2);}
+        Expression child1 = (Expression) visit(ctx.le1);
+        Expression child2 = (Expression) visit(ctx.le2);
+        return new LogischeExpressionNode(child1, "<=", child2);}
 
     public ASTNode visitGreaterThen(CplusplusParser.GreaterThenContext ctx) {
-        Expression child1 = (Expression) visit(ctx.expr(0));
-        Expression child2 = (Expression) visit(ctx.expr(1));
-        return new ExprNode(">", child1, child2); }
-    public ASTNode visitGreaterOrEqual(CplusplusParser.GreaterOrEqualContext ctx) {
-        Expression child1 = (Expression) visit(ctx.expr(0));
-        Expression child2 = (Expression) visit(ctx.expr(1));
-        return new ExprNode("<=", child1, child2);
-    }
+        Expression child1 = (Expression) visit(ctx.le1);
+        Expression child2 = (Expression) visit(ctx.le2);
+        return new LogischeExpressionNode(child1, ">", child2); }
 
+    public ASTNode visitGreaterOrEqual(CplusplusParser.GreaterOrEqualContext ctx) {
+        Expression child1 = (Expression) visit(ctx.le1);
+        Expression child2 = (Expression) visit(ctx.le2);
+        return new LogischeExpressionNode(child1, "<=", child2);
+    }
+    /*
     public void checkForLogicalOperator(CplusplusParser.ExprContext expr) {
         if (expr instanceof CplusplusParser.AndContext) {
             throw new RuntimeException("&& nicht erlaubt in Assign");
@@ -463,5 +460,5 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
         } else if (expr instanceof CplusplusParser.NotEqualContext) {
             throw new RuntimeException("!= nicht erlaubt in Assign");
         }
-    }
+    }*/
 }

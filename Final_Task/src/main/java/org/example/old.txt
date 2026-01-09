@@ -1,0 +1,70 @@
+
+    // --- Statement Handler ---
+    private void visitDef(DefNode def) {
+        // 1. Wir müssen wissen, welchen Typ der Wert hat
+        // (Hier rufen wir resolve rekursiv auf)
+        PrimType valueType = resolve(def.getValue());
+
+        // 2. Symbol erstellen
+        Symbol s = new Symbol(def.getName(), valueType, def, currentScope);
+
+        // 3. Im aktuellen Scope speichern
+        if (!currentScope.bind(s)) {
+            throw new RuntimeException("Variable '" + def.getName() + "' ist bereits definiert!");
+        }
+    }
+
+    private void visitDefn(DefnNode defn) {
+        // 1. Funktionsnamen im AKTUELLEN (äußeren) Scope registrieren
+        // Wir nehmen hier VOID oder UNKNOWN an, da wir den Body noch nicht ausgewertet haben.
+        // Oder man wertet erst den Body aus (komplexer bei Rekursion).
+        Symbol funcSymbol = new Symbol(defn.getName(), PrimType.VOID, defn, currentScope);
+        currentScope.bind(funcSymbol);
+
+        // 2. Neuen Scope für die Funktion öffnen
+        Scope functionScope = new Scope(currentScope);
+        this.currentScope = functionScope; // Scope wechseln
+
+        try {
+            // 3. Parameter im neuen Scope binden (als lokale Variablen)
+            // Wir wissen den Typ der Parameter oft nicht in dynamischen Sprachen,
+            // daher nehmen wir hier UNKNOWN oder INT an (je nach Sprachdesign).
+            for (String paramName : defn.getParameters()) {
+                // Parameter haben keine "Expression", daher connectedNode = null oder defn
+                Symbol paramSymbol = new Symbol(paramName, PrimType.UNKNOWN, null, currentScope);
+                currentScope.bind(paramSymbol);
+            }
+
+            // 4. Body im Funktions-Scope resolven
+            resolve(defn.getBody());
+
+        } finally {
+            // 5. Scope wieder verlassen (Wichtig!)
+            this.currentScope = currentScope.parent;
+        }
+    }
+
+// --- Expression Handler ---
+
+    private PrimType visitVariable(VariableNode v) {
+        Symbol s = currentScope.resolve(v.getName());
+        if (s == null) {
+            throw new RuntimeException("Variable '" + v.getName() + "' nicht gefunden!");
+        }
+        return s.getType();
+    }
+
+    private PrimType visitIf(IfNode ifNode) {
+        // Bedingung prüfen (sollte BOOL sein)
+        PrimType condType = resolve(ifNode.getCondition());
+        if (condType != PrimType.BOOL && condType != PrimType.UNKNOWN) {
+            System.out.println("Warnung: If-Bedingung ist kein Boolean");
+        }
+
+        PrimType thenType = resolve(ifNode.getThenBranch());
+        if (ifNode.getElseBranch() != null) {
+            PrimType elseType = resolve(ifNode.getElseBranch());
+            // Hier könnte man prüfen, ob thenType == elseType ist
+            return thenType;
+        }
+

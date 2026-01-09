@@ -16,7 +16,7 @@ public class Resolver {
             } else if (n instanceof Expression) {
                 resolve((Expression) n);
             } else {
-                System.out.println("Was Zum Kukuk ist: " + node.toString());
+                System.out.println("Was Zum Kuckuck ist: " + node.toString());
                 throw new RuntimeException("kein Statement oder Expression");
             }
         }
@@ -28,27 +28,114 @@ public class Resolver {
         //ParamNode
         switch (statement) {
             case InitNode i -> visitInit(i);
-           case DeclNode d -> visitDecl(d);
+            case DeclNode d -> visitDecl(d);
             case AssiNode a -> visitAssi(a);
+            case BlockNode b -> visitBlock(b);
+            case FBlockNode b -> visitFBlock(b);
+            case CBlockNode b -> visitCBlock(b);
+            case IfNode i -> visitIf(i);
+            case WhileNode w -> visitWhile(w);
+            case FDeclNode f -> visitFDecl(f);
+            case FCallNode f -> visitFCall(f);
+            case CDeclNode c -> visitCDecl(c);
+            case ConDeclNode c -> visitConDecl(c);
+            case ConCallNode c -> visitConCall(c);
+            case MCall m -> visitMCall(m);
+            case Block b -> visitBlock( b);
+            default ->
+                    throw new IllegalArgumentException("Unbekannter Knotentyp: " + statement.getClass().getSimpleName());
+        }
+    }
 
-            case BlockNode()
-                ;
-            case IfNode()
-                ;
-            case WhileNode()
-                ;
-            case FDeclNode()
-                ;
-            case FCallNode()
-                ;
-            case CDeclNode()
-                ;
-            case ConDeclNode()
-                ;
-            case ConCallNode()
-                ;
-            case MCall()
-                ;
+
+    public void visitBlock(Block b)
+    {
+        System.out.println("Error " + b + " Block ");
+    }
+
+    public void visitWhile(WhileNode w) {
+        resolve(w.com());
+        resolve(w.block()); //todo com in block scope?
+    }
+
+    //cord FDeclNode(boolean virtual, Type type, boolean and, IDNode id,
+    // ParamNodeDecl params, BlockNode block) implements ASTNode,Statement {}
+    //r
+    public void visitFDecl(FDeclNode f) {
+        Symbol ids = new Symbol(f.id().name(), f.type(), f, currentScope, f.and());
+        currentScope.bind(ids);
+        //neuer Scope
+        //Parameter binden
+        for (SingleParamNode p : f.params().params()) {
+            Symbol s = new Symbol(p.id().name(), p.type(), f, currentScope, false);
+            currentScope.bind(s);
+        }
+        resolve(f.block());// todo hoffentlich richtiger block
+    }
+
+    int e = 0;
+    public void g(int e){}
+    public void visitFCall(FCallNode f) {
+        currentScope.resolve(f.id().name());
+        for(Expression s : f.params().params())
+        {
+            resolve(s);
+        }
+    }
+
+    //public auto {  }
+    public void visitCDecl(CDeclNode c) {
+
+        IDType idType = new IDType(c.name());
+        Symbol sName = new Symbol(c.name().name(), idType,c,currentScope,false);
+        currentScope.bind(sName);
+        resolve(c.block());
+    }
+
+    public void visitConDecl(ConDeclNode c) {
+        // Logik für Konstruktor-Deklarationen
+        Symbol sym = new Symbol(c.name().name(),c.name(),c,currentScope,false);
+        currentScope.bind(sym);
+        resolve(c.block());
+    }
+
+    public void visitConCall(ConCallNode c) {
+        // Logik für Konstruktor-Aufrufe
+    }
+
+    public void visitMCall(MCall m) {
+        // Logik für Methoden-Aufrufe
+    }
+
+    public void visitIf(IfNode i) {
+        resolve(i.com());
+        resolve(i.thenBlock());
+        if (i.elseBlock() != null) {
+            resolve(i.elseBlock());
+        }
+    }
+
+    public void visitBlock(BlockNode b) {
+        Scope blockScope = new Scope(currentScope);
+        this.currentScope = blockScope; // Scope wechseln
+        for (Statement s : b.body()) {
+            resolve(s); //todo return? statement? expression? blocknode statements oder expression?
+        }
+        this.currentScope = currentScope.getParent();
+    }
+
+    public void visitFBlock( FBlockNode b) {
+        //this.currentScope = new Scope(currentScope);
+
+        for (Statement s : b.body()) {
+            resolve(s);
+        }
+    }
+
+    public void visitCBlock( CBlockNode b) {
+
+        for (Statement s : b.body()) {
+            resolve(s);
         }
     }
 
@@ -60,15 +147,39 @@ public class Resolver {
             case StringNode s -> new StringType();
             case BoolNode b -> new BoolType();
             case CharNode c -> new CharType();
-            case ExprNode e -> visitExpression(e);
+            case LogischeExpressionNode e -> visitLogischeExpressionNode(e);
+            case ArithmetischeExpressionNode e -> visitArithmetischeExpressionNode(e);
 
             default -> throw new IllegalStateException("Unexpected value: " + expression);
         };
     }
 
-    private Type visitExpression(ExprNode e) { //todo expression? oder statement, was mit scopes
-        // left right getten
-        //compare with op
+
+    private Type visitLogischeExpressionNode(LogischeExpressionNode l) {
+        Type left = resolve(l.left());
+        Type right = resolve(l.right());
+        String operator = l.operator();
+        Type type = null;
+        if (left != right) {
+            System.out.println("Types of Expressions arent the same, Left: " + left + " Right: " + right);
+            return null;
+        } else {
+            type = left;
+        }
+        if (operator.equals("==") ||
+                operator.equals("!=")) {
+            opEqual(type, operator);
+
+        } else if (operator.equals("<") ||
+                operator.equals("<=") ||
+                operator.equals(">") ||
+                operator.equals(">=")) {
+            opCompare(type, operator);
+        }
+        return type;
+    }
+
+    private Type visitArithmetischeExpressionNode(ArithmetischeExpressionNode e) { //todo expression? oder statement, was mit scopes
         Type left = resolve(e.left());
         Type right = resolve(e.right());
         String operator = e.operator();
@@ -79,22 +190,12 @@ public class Resolver {
         } else {
             type = left;
         }
-        // todo nachdenken scopes nutzen=?
-
         if (operator.equals("+") ||
                 operator.equals("-") ||
                 operator.equals("*") ||
                 operator.equals("/") ||
                 operator.equals("%")) {
-            opArithmetik(type, operator); //todo return?
-        } else if (operator.equals("==") ||
-                operator.equals("!=")) {
-            opEqual(type, operator);
-        } else if (operator.equals("<") ||
-                operator.equals("<=") ||
-                operator.equals(">") ||
-                operator.equals(">=")) {
-            opCompare(type, operator);
+            opArithmetik(type, operator);
         }
         return type;
     }
@@ -123,7 +224,6 @@ public class Resolver {
 
     private Type opArithmetik(Type type, String operator) {
         if (type instanceof IntType) {
-            // valid todo implement return scope
             return type;
         } else {
             System.out.println("Arithmetik only allowed between IntTypes, got: " + type);
@@ -151,8 +251,7 @@ public class Resolver {
         currentScope.bind(s);
     }
 
-    private void visitAssi(AssiNode assiNode)
-    {//record AssiNode(IDNode id, Expression value) implements Statement, ASTNode{}
+    private void visitAssi(AssiNode assiNode) {//record AssiNode(IDNode id, Expression value) implements Statement, ASTNode{}
         //symbol (String name, Type type,ASTNode querverbindendeNode,Scope scope, boolean and) {
       /*  Symbol s = new Symbol(assiNode.id().name(),
                 resolve(assiNode.value()),
@@ -163,76 +262,6 @@ public class Resolver {
         currentScope.resolve(assiNode.id().name());
     }
 
-    // --- Statement Handler ---
-    private void visitDef(DefNode def) {
-        // 1. Wir müssen wissen, welchen Typ der Wert hat
-        // (Hier rufen wir resolve rekursiv auf)
-        PrimType valueType = resolve(def.getValue());
-
-        // 2. Symbol erstellen
-        Symbol s = new Symbol(def.getName(), valueType, def, currentScope);
-
-        // 3. Im aktuellen Scope speichern
-        if (!currentScope.bind(s)) {
-            throw new RuntimeException("Variable '" + def.getName() + "' ist bereits definiert!");
-        }
-    }
-
-    private void visitDefn(DefnNode defn) {
-        // 1. Funktionsnamen im AKTUELLEN (äußeren) Scope registrieren
-        // Wir nehmen hier VOID oder UNKNOWN an, da wir den Body noch nicht ausgewertet haben.
-        // Oder man wertet erst den Body aus (komplexer bei Rekursion).
-        Symbol funcSymbol = new Symbol(defn.getName(), PrimType.VOID, defn, currentScope);
-        currentScope.bind(funcSymbol);
-
-        // 2. Neuen Scope für die Funktion öffnen
-        Scope functionScope = new Scope(currentScope);
-        this.currentScope = functionScope; // Scope wechseln
-
-        try {
-            // 3. Parameter im neuen Scope binden (als lokale Variablen)
-            // Wir wissen den Typ der Parameter oft nicht in dynamischen Sprachen,
-            // daher nehmen wir hier UNKNOWN oder INT an (je nach Sprachdesign).
-            for (String paramName : defn.getParameters()) {
-                // Parameter haben keine "Expression", daher connectedNode = null oder defn
-                Symbol paramSymbol = new Symbol(paramName, PrimType.UNKNOWN, null, currentScope);
-                currentScope.bind(paramSymbol);
-            }
-
-            // 4. Body im Funktions-Scope resolven
-            resolve(defn.getBody());
-
-        } finally {
-            // 5. Scope wieder verlassen (Wichtig!)
-            this.currentScope = currentScope.parent;
-        }
-    }
-
-// --- Expression Handler ---
-
-    private PrimType visitVariable(VariableNode v) {
-        Symbol s = currentScope.resolve(v.getName());
-        if (s == null) {
-            throw new RuntimeException("Variable '" + v.getName() + "' nicht gefunden!");
-        }
-        return s.getType();
-    }
-
-    private PrimType visitIf(IfNode ifNode) {
-        // Bedingung prüfen (sollte BOOL sein)
-        PrimType condType = resolve(ifNode.getCondition());
-        if (condType != PrimType.BOOL && condType != PrimType.UNKNOWN) {
-            System.out.println("Warnung: If-Bedingung ist kein Boolean");
-        }
-
-        PrimType thenType = resolve(ifNode.getThenBranch());
-        if (ifNode.getElseBranch() != null) {
-            PrimType elseType = resolve(ifNode.getElseBranch());
-            // Hier könnte man prüfen, ob thenType == elseType ist
-            return thenType;
-        }
-        return thenType;
-    }
-
 
 }
+

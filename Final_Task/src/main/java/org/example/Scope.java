@@ -13,6 +13,10 @@ public class Scope {
         this.parent = parent;
     }
 
+    public Scope getParent() {
+        return parent;
+    }
+
     //suchen
     public Symbol resolve(String name) {
         Symbol s = symbolMap.get(name);
