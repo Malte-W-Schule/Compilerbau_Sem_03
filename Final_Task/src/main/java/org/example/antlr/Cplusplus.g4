@@ -32,6 +32,7 @@ expr:
       | logExpr
       | f_call
       | m_call
+      | constructor_call
       ;
 
 arithmExpr: // log op
@@ -59,28 +60,20 @@ logExpr: //plus mal minus -> ari
     | (NEGATE)? atom                                            #atom_logExpr
     ;
 
-
-
-/*con:
-      con ('&&') con                        #conAnd
-    | con ('||') con                        #conOr
-    | expr                                  #conToExpr //todo rename
-    ;*/
-
-//oder
-
-//a<b<c
 //Parameterloser Konstruktor und weitere Konstruktoren (jeweils ohne Initialisierungslisten), Verwendung nur als T x; (ruft T() auf) oder T x = T(args); (kein direkter Aufruf T x(args);!)
-constructor_call: ID ID';';
+// Point p;
+// p = Point(3, 4)
+constructor_call: type ID ';'
+                | ID parameter_call';';
 // T x; (ruft T()
-constructor_decl: ID parameter_decl block;
+constructor_decl: ID parameter_decl f_block;
 
 // === Functions ===
 //Überladung (Overloading) nur per exakt passender Signatur (Name + Anzahl + exakte Typen inkl. &‑Markierung)
 // === Function Declaration ===
 // void cast(type parameter1,...) { body (return*) }
 // Class::Methode(){}
-f_decl: VIRTUAL? type AND? ID parameter_decl (block|';');
+f_decl: VIRTUAL? type AND? ID parameter_decl (f_block|';');
 f_block: CLBRACK stmt* return? CRBRACK;
 
 // === Function Call ===

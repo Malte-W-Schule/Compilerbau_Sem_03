@@ -44,7 +44,7 @@ record DeclNode(Type type, IDNode id, boolean and) implements Statement, ASTNode
 record InitNode(Type type, IDNode id, boolean and, Expression value) implements Statement, ASTNode{}
 record AssiNode(IDNode objectId,IDNode id, Expression value) implements Statement, ASTNode{}
 
-// === Bloecke ===
+// === Blöcke ===
 record BlockNode(List<Statement> body) implements Block{}
 record FBlockNode(List<Statement> body) implements Block{}
 record CBlockNode(List<Statement> body) implements Block{}
@@ -55,9 +55,10 @@ record WhileNode(Expression com, Block block) implements ASTNode,Statement{}
 
 // === Function ===
 record FDeclNode(boolean virtual, Type type, boolean and, IDNode id, ParamNodeDecl params, Block block) implements ASTNode,Statement {}
-record FCallNode(IDNode id, ParamNode params) implements ASTNode, Statement, Expression{}
-record ParamNode(List<Expression> params)implements ASTNode{}
-
+record FCallNode(IDNode id, ParamCallNode params) implements ASTNode, Statement, Expression{}
+// === Parameter ===
+record ParamNode(ParamCallNode params)implements ASTNode{}
+record ParamCallNode(List<Expression> params)implements ASTNode{}
 record ParamNodeDecl(List<SingleParamNode> params)implements ASTNode{}
 record SingleParamNode(Type type, boolean and, IDNode id) implements ASTNode {}
 
@@ -65,12 +66,13 @@ record SingleParamNode(Type type, boolean and, IDNode id) implements ASTNode {}
 record CDeclNode(IDNode name, Block block ) implements ASTNode,Statement{}
 // constructor
 //List<FDeclNode> functions,ConDeclNode constructor
-
-record ConDeclNode(IDNode name, Block block) implements ASTNode,Statement{};
-record ConCallNode(IDNode name) implements ASTNode,Statement{}
+// Point(int a, int b) { x = a; y = b; }
+record ConDeclNode(IDNode name, ParamNodeDecl params, Block block) implements ASTNode,Statement{};
+//Default: Point p; Parametrisiert: Point p = Point(3, 4);
+record ConCallNode(IDType type, IDNode name, ParamCallNode params) implements ASTNode,Statement, Expression{}
 
 // === Method Call from class ===
-record MCall(IDNode clars, IDNode fName, List<Expression> params) implements ASTNode, Statement, Expression{}
+record MCall(IDNode clars, IDNode fName,ParamCallNode params) implements ASTNode, Statement, Expression{}
 
 // ===Expression ===
 record ArithmetischeExpressionNode(Expression left,String operator,Expression right) implements ASTNode, Expression{}

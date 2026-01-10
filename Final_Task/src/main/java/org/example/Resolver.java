@@ -41,15 +41,14 @@ public class Resolver {
             case ConDeclNode c -> visitConDecl(c);
             case ConCallNode c -> visitConCall(c);
             case MCall m -> visitMCall(m);
-            case Block b -> visitBlock( b);
+            case Block b -> visitBlock(b);
             default ->
                     throw new IllegalArgumentException("Unbekannter Knotentyp: " + statement.getClass().getSimpleName());
         }
     }
 
 
-    public void visitBlock(Block b)
-    {
+    public void visitBlock(Block b) {
         System.out.println("Error " + b + " Block ");
     }
 
@@ -65,46 +64,58 @@ public class Resolver {
         Symbol ids = new Symbol(f.id().name(), f.type(), f, currentScope, f.and());
         currentScope.bind(ids);
         //neuer Scope
+        this.currentScope = new Scope(currentScope);
         //Parameter binden
         for (SingleParamNode p : f.params().params()) {
-            Symbol s = new Symbol(p.id().name(), p.type(), f, currentScope, false);
+            Symbol s = new Symbol(p.id().name(), p.type(), f, currentScope, f.and());
             currentScope.bind(s);
         }
-        resolve(f.block());// todo hoffentlich richtiger block
+        resolve(f.block());
+        currentScope = currentScope.getParent();
     }
 
-    int e = 0;
-    public void g(int e){}
     public void visitFCall(FCallNode f) {
         currentScope.resolve(f.id().name());
-        for(Expression s : f.params().params())
-        {
+        for (Expression s : f.params().params()) {
             resolve(s);
         }
     }
 
-    //public auto {  }
     public void visitCDecl(CDeclNode c) {
 
         IDType idType = new IDType(c.name());
-        Symbol sName = new Symbol(c.name().name(), idType,c,currentScope,false);
+        Symbol sName = new Symbol(c.name().name(), idType, c, currentScope, false);
         currentScope.bind(sName);
         resolve(c.block());
     }
 
     public void visitConDecl(ConDeclNode c) {
         // Logik für Konstruktor-Deklarationen
-        Symbol sym = new Symbol(c.name().name(),c.name(),c,currentScope,false);
+        Symbol sym = new Symbol(c.name().name(), c.name(), c, currentScope, false);
         currentScope.bind(sym);
+        this.currentScope = new Scope(currentScope);
+        //Parameter binden
+        for (SingleParamNode p : c.params().params()) {
+            Symbol s = new Symbol(p.id().name(), p.type(), c, currentScope, p.and());
+            currentScope.bind(s);
+        }
         resolve(c.block());
+        currentScope = currentScope.getParent();
     }
 
     public void visitConCall(ConCallNode c) {
-        // Logik für Konstruktor-Aufrufe
+        currentScope.resolve(c.name().name());
+        for (Expression e : c.params().params()) {
+            resolve(e);
+        }
     }
 
     public void visitMCall(MCall m) {
-        // Logik für Methoden-Aufrufe
+        currentScope.resolve(m.fName().name());
+        currentScope.resolve(m.clars().name());
+        for (Expression e : m.params().params()) {
+            resolve(e);
+        }
     }
 
     public void visitIf(IfNode i) {
@@ -119,24 +130,25 @@ public class Resolver {
         Scope blockScope = new Scope(currentScope);
         this.currentScope = blockScope; // Scope wechseln
         for (Statement s : b.body()) {
-            resolve(s); //todo return? statement? expression? blocknode statements oder expression?
+            resolve(s);
         }
         this.currentScope = currentScope.getParent();
     }
 
-    public void visitFBlock( FBlockNode b) {
+    public void visitFBlock(FBlockNode b) {
         //this.currentScope = new Scope(currentScope);
-
         for (Statement s : b.body()) {
             resolve(s);
         }
     }
 
-    public void visitCBlock( CBlockNode b) {
-
+    public void visitCBlock(CBlockNode b) {
+        Scope blockScope = new Scope(currentScope);
+        this.currentScope = blockScope; // Scope wechseln
         for (Statement s : b.body()) {
             resolve(s);
         }
+        this.currentScope = currentScope.getParent();
     }
 
     // Expressions MÜSSEN einen PrimType zurückgeben
@@ -153,7 +165,6 @@ public class Resolver {
             default -> throw new IllegalStateException("Unexpected value: " + expression);
         };
     }
-
 
     private Type visitLogischeExpressionNode(LogischeExpressionNode l) {
         Type left = resolve(l.left());
