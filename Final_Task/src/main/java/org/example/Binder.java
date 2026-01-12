@@ -75,15 +75,6 @@ public class Binder {
         currentScope.bind(s);
     }
 
-    public void visitBlock(BlockNode b) {
-        Scope blockScope = new Scope(currentScope);
-        this.currentScope = blockScope; // Scope wechseln
-        for (Statement s : b.body()) {
-            visitStmt(s);
-        }
-        this.currentScope = currentScope.getParent();
-    }
-
     public void visitFDecl(FDeclNode f) {
         Symbol ids = new Symbol(f.id().name(), f.type(), f, currentScope, f.and());
         currentScope.bind(ids);
@@ -149,6 +140,15 @@ public class Binder {
     }
 
     // ==================================== binden über umwege ======================
+
+    public void visitBlock(BlockNode b) {
+        Scope blockScope = new Scope(currentScope);
+        this.currentScope = blockScope; // Scope wechseln
+        for (Statement s : b.body()) {
+            visitStmt(s);
+        }
+        this.currentScope = currentScope.getParent();
+    }
 
     public void visitFBlock(FBlockNode b) {
 
