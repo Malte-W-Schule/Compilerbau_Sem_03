@@ -46,8 +46,8 @@ record AssiNode(IDNode objectId,IDNode id, Expression value) implements Statemen
 
 // === Blöcke ===
 record BlockNode(List<Statement> body) implements Block{}
-record FBlockNode(List<Statement> body) implements Block{}
-record CBlockNode(List<Statement> body) implements Block{}
+record FBlockNode(ReturnNode ret, List<Statement> body) implements Block{}
+record CBlockNode(boolean visibility, List<Statement> body) implements Block{}
 
 // === IF WHILE ... ===
 record IfNode(Expression com, Block thenBlock, Block elseBlock )implements Statement, ASTNode{}
@@ -63,7 +63,7 @@ record ParamNodeDecl(List<SingleParamNode> params)implements ASTNode{}
 record SingleParamNode(Type type, boolean and, IDNode id) implements ASTNode {}
 
 // === Class ===
-record CDeclNode(IDNode name, Block block ) implements ASTNode,Statement{}
+record CDeclNode(IDNode name, IDNode inherit, boolean isInherit, Block block ) implements ASTNode,Statement{}
 // constructor
 //List<FDeclNode> functions,ConDeclNode constructor
 // Point(int a, int b) { x = a; y = b; }

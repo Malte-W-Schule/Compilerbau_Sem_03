@@ -133,12 +133,12 @@ init    :   type AND? ID ASS expr ';';
 assign  : (ID'.')? ID ASS expr ';' ;
 
 //class_decl: CLASSS ID (':' ID)? CLBRACK ('public:')? (stmt)* CRBRACK';';
-class_decl : CLASS ID (':' PUBLIC ID)?  class_block ';';
+class_decl : CLASS ID (':' PUBLIC ID)?  class_block;
 class_block : CLBRACK (PUBLIC ':')? stmt* CRBRACK ';';
 
-
 // === Method call ===
-m_call: ID '.' ID parameter_call?;
+//b.f()
+m_call: ID '.' ID parameter_call;
 //obj.f
 //Feld-/Methodenzugriff: obj.f, obj.m(args)
 

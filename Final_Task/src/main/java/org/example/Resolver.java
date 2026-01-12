@@ -1,8 +1,14 @@
 package org.example;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 public class Resolver {
 
     private Scope currentScope;
+    private Scope classScope;
+
 
     public Resolver() {
         // Globaler Scope (Eltern-Scope ist null)
@@ -40,54 +46,13 @@ public class Resolver {
             case CDeclNode c -> visitCDecl(c);
             case ConDeclNode c -> visitConDecl(c);
             case ConCallNode c -> visitConCall(c);
-            case MCall m -> visitMCall(m);
+            case MCall m -> visitMCallStmt(m);
             case Block b -> visitBlock(b);
             default ->
                     throw new IllegalArgumentException("Unbekannter Knotentyp: " + statement.getClass().getSimpleName());
         }
     }
 
-
-    public void visitBlock(Block b) {
-        System.out.println("Error " + b + " Block ");
-    }
-
-    public void visitWhile(WhileNode w) {
-        resolve(w.com());
-        resolve(w.block()); //todo com in block scope?
-    }
-
-    //cord FDeclNode(boolean virtual, Type type, boolean and, IDNode id,
-    // ParamNodeDecl params, BlockNode block) implements ASTNode,Statement {}
-    //r
-    public void visitFDecl(FDeclNode f) {
-        Symbol ids = new Symbol(f.id().name(), f.type(), f, currentScope, f.and());
-        currentScope.bind(ids);
-        //neuer Scope
-        this.currentScope = new Scope(currentScope);
-        //Parameter binden
-        for (SingleParamNode p : f.params().params()) {
-            Symbol s = new Symbol(p.id().name(), p.type(), f, currentScope, f.and());
-            currentScope.bind(s);
-        }
-        resolve(f.block());
-        currentScope = currentScope.getParent();
-    }
-
-    public void visitFCall(FCallNode f) {
-        currentScope.resolve(f.id().name());
-        for (Expression s : f.params().params()) {
-            resolve(s);
-        }
-    }
-
-    public void visitCDecl(CDeclNode c) {
-
-        IDType idType = new IDType(c.name());
-        Symbol sName = new Symbol(c.name().name(), idType, c, currentScope, false);
-        currentScope.bind(sName);
-        resolve(c.block());
-    }
 
     public void visitConDecl(ConDeclNode c) {
         // Logik für Konstruktor-Deklarationen
@@ -103,6 +68,44 @@ public class Resolver {
         currentScope = currentScope.getParent();
     }
 
+    // Expressions MÜSSEN einen PrimType zurückgeben
+    public Type resolve(Expression expression) {
+
+        return switch (expression) {
+            case IntegerNode i -> new IntType();
+            case StringNode s -> new StringType();
+            case BoolNode b -> new BoolType();
+            case CharNode c -> new CharType();
+            case MCall m -> visitMCallExpr(m);
+            case FCallNode f -> visitFCallExpr(f);
+            case LogischeExpressionNode e -> visitLogischeExpressionNode(e);
+            case ArithmetischeExpressionNode e -> visitArithmetischeExpressionNode(e);
+
+            default -> throw new IllegalStateException("Unexpected value: " + expression);
+        };
+    }
+
+
+    public void visitBlock(Block b) {
+        System.out.println("Error " + b + " Block ");
+    }
+
+    public void visitWhile(WhileNode w) {
+        resolve(w.com());
+        resolve(w.block()); //todo com in block scope?
+    }
+
+    //cord FDeclNode(boolean virtual, Type type, boolean and, IDNode id,
+    // ParamNodeDecl params, BlockNode block) implements ASTNode,Statement {}
+    //r
+
+    public void visitFCall(FCallNode f) {
+        currentScope.resolve(f.id().name());
+        for (Expression s : f.params().params()) {
+            resolve(s);
+        }
+    }
+
     public void visitConCall(ConCallNode c) {
         currentScope.resolve(c.name().name());
         for (Expression e : c.params().params()) {
@@ -110,13 +113,21 @@ public class Resolver {
         }
     }
 
-    public void visitMCall(MCall m) {
-        currentScope.resolve(m.fName().name());
+    public void visitMCallStmt(MCall m) {//todo inherit scope
+        //Klasse ist im globalen Scope, sollte so gehen
         currentScope.resolve(m.clars().name());
+        //Funktionsname ist nicht im globalen Scope, sondern Klassen Scope
+        currentScope.resolve(m.fName().name());
+
         for (Expression e : m.params().params()) {
             resolve(e);
         }
     }
+
+    private Type visitMCallExpr(MCall m) {
+        return classScope.resolve(m.fName().name()).getType();
+    }
+
 
     public void visitIf(IfNode i) {
         resolve(i.com());
@@ -143,27 +154,20 @@ public class Resolver {
     }
 
     public void visitCBlock(CBlockNode b) {
-        Scope blockScope = new Scope(currentScope);
-        this.currentScope = blockScope; // Scope wechseln
         for (Statement s : b.body()) {
             resolve(s);
         }
-        this.currentScope = currentScope.getParent();
     }
 
-    // Expressions MÜSSEN einen PrimType zurückgeben
-    public Type resolve(Expression expression) {
+    //class b {}
+    //int c(){
+    //return 2
+    //
+    //
 
-        return switch (expression) {
-            case IntegerNode i -> new IntType();
-            case StringNode s -> new StringType();
-            case BoolNode b -> new BoolType();
-            case CharNode c -> new CharType();
-            case LogischeExpressionNode e -> visitLogischeExpressionNode(e);
-            case ArithmetischeExpressionNode e -> visitArithmetischeExpressionNode(e);
-
-            default -> throw new IllegalStateException("Unexpected value: " + expression);
-        };
+    private Type visitFCallExpr(FCallNode f) {
+        Symbol s = currentScope.resolve(f.id().name());
+        return s.getType();
     }
 
     private Type visitLogischeExpressionNode(LogischeExpressionNode l) {
@@ -171,8 +175,9 @@ public class Resolver {
         Type right = resolve(l.right());
         String operator = l.operator();
         Type type = null;
-        if (left != right) {
-            System.out.println("Types of Expressions arent the same, Left: " + left + " Right: " + right);
+        if (!left.getClass().equals(right.getClass())) {
+            System.out.println("Type mismatch! Left: " + left.getClass().getSimpleName() +
+                    " Right: " + right.getClass().getSimpleName());
             return null;
         } else {
             type = left;
@@ -195,8 +200,8 @@ public class Resolver {
         Type right = resolve(e.right());
         String operator = e.operator();
         Type type = null;
-        if (left != right) {
-            System.out.println("Types of Expressions arent the same, Left: " + left + " Right: " + right);
+        if (!left.getClass().equals(right.getClass())) {
+            System.out.println("Type mismatch in arithmetic! Left: " + left + " Right: " + right);
             return null;
         } else {
             type = left;
@@ -214,7 +219,7 @@ public class Resolver {
     private Type opCompare(Type type, String operator) {
         if (type instanceof IntType ||
                 type instanceof CharType) {
-            return type;
+            return new BoolType();
         } else {
             System.out.println("compares like :" + operator + " only allowed between int or char");
             throw new RuntimeException();
@@ -226,7 +231,7 @@ public class Resolver {
                 type instanceof BoolType ||
                 type instanceof IntType ||
                 type instanceof CharType) {
-            return type;
+            return new BoolType();
         } else {
             System.out.println("Its only allowed to compare string, bool, int or chars with each other");
             throw new RuntimeException();
@@ -244,35 +249,58 @@ public class Resolver {
 
     // == visit Statements ==
     private void visitInit(InitNode initNode) {
-        Symbol s = new Symbol(initNode.id().name(),
-                initNode.type(),
-                initNode,
-                currentScope,
-                initNode.and());
-        currentScope.bind(s);
+
     }
 
 
     private void visitDecl(DeclNode declNode) {
-        Symbol s = new Symbol(declNode.id().name(),
-                declNode.type(),
-                declNode,
-                currentScope,
-                declNode.and());
-        currentScope.bind(s);
+
     }
 
     private void visitAssi(AssiNode assiNode) {//record AssiNode(IDNode id, Expression value) implements Statement, ASTNode{}
-        //symbol (String name, Type type,ASTNode querverbindendeNode,Scope scope, boolean and) {
-      /*  Symbol s = new Symbol(assiNode.id().name(),
-                resolve(assiNode.value()),
-                assiNode,
-                currentScope,
-                false
-                );*///todo interpreter in resolver?
         currentScope.resolve(assiNode.id().name());
     }
 
 
+    public void visitFDecl(FDeclNode f) {
+        Symbol ids = new Symbol(f.id().name(), f.type(), f, currentScope, f.and());
+        currentScope.bind(ids);
+        //neuer Scope
+        this.currentScope = new Scope(currentScope);
+        //Parameter binden
+        for (SingleParamNode p : f.params().params()) {
+            Symbol s = new Symbol(p.id().name(), p.type(), f, currentScope, f.and());
+            currentScope.bind(s);
+        }
+        resolve(f.block());
+        currentScope = currentScope.getParent();
+    }
+
+
+    public void visitCDecl(CDeclNode c) {
+        if (c.isInherit()) {
+            //Scope inheritScope = resolveClass(c.inherit().name());
+            Scope oldScope = this.currentScope;
+           // this.currentScope = new Scope(inheritScope);
+            visitCDeclHelper(c);
+
+            // scope zurück setzen
+            this.currentScope = oldScope;
+        } else {
+            currentScope = new Scope(currentScope);
+
+            visitCDeclHelper(c);
+            //current scope zurück setzen
+            this.currentScope = currentScope.getParent();
+        }
+    }
+
+    private void visitCDeclHelper(CDeclNode c) {
+        IDType idType = new IDType(c.name());
+        Symbol sName = new Symbol(c.name().name(), idType, c, currentScope, false);
+        currentScope.bind(sName);
+        resolve(c.block());
+
+    }
 }
 

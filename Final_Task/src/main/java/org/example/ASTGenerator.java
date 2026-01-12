@@ -5,29 +5,46 @@ import org.example.antlr.CplusplusBaseVisitor;
 import org.example.antlr.CplusplusParser;
 
 import javax.naming.Context;
+import java.lang.reflect.Field;
 import java.net.IDN;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
 
     @Override
-    public ASTNode visitClass_decl(CplusplusParser.Class_declContext ctx) {
-
-        //T x; == T()
-        //T x = T(args)
-        //record CDeclNode(IDNode name, List<FDeclNode> functions,BlockNode constructor) implements ASTNode{}
-
-        String name = ctx.ID().toString();
+    public ASTNode visitClass_decl(CplusplusParser.Class_declContext ctx){
+        String name = ctx.ID(0).toString();
         IDNode id = new IDNode(name);
-
+        IDNode inherit = null;
+        boolean isInherit = false;
+        if(ctx.ID().size()>1) {
+            inherit = (IDNode) visit(ctx.ID(1)); //0 ist ID Klasse, 1 ist ID der vererbten Klasse
+            isInherit = true;
+        }//todo inherit scope
         CBlockNode block = (CBlockNode) visit(ctx.class_block());
-        return new CDeclNode(id, block);
+        return new CDeclNode(id, inherit , isInherit, block);
+    }
+
+    @Override public ASTNode visitClass_block(CplusplusParser.Class_blockContext ctx) {
+        boolean visibility = false;
+        if (ctx.PUBLIC() != null) {
+            visibility = true;
+        }
+
+        List<Statement> body = new ArrayList<>();
+        for (CplusplusParser.StmtContext stmtCtx : ctx.stmt()) {
+            ASTNode node = visit(stmtCtx);
+            if (node instanceof Statement) {
+                body.add((Statement) node);
+            }
+        }
+        return new CBlockNode(visibility, body);
     }
 
     @Override
     public ASTNode visitM_call(CplusplusParser.M_callContext ctx) {
-//record MCall(IDNode clars, IDNode fName, List<Expression> params) implements ASTNode{}
 
         String objText = ctx.ID(0).getText();
         IDNode objName = new IDNode(objText);
@@ -35,12 +52,16 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
         String methodText = ctx.ID(1).getText();
         IDNode methodName = new IDNode(methodText);
 
-        ParamCallNode params = (ParamCallNode) visit(ctx.parameter_call());
+        ParamCallNode params = null;
+        if(ctx.parameter_call()!=null) {
+            params = (ParamCallNode) visit(ctx.parameter_call());
+        }
         return new MCall(objName, methodName, params);
     }
 
     @Override
     public ASTNode visitProgram(CplusplusParser.ProgramContext ctx) {
+        System.out.println("Ist in Programm gegangen");
         List<Statement> statements = new ArrayList<>();
 
         // Alle Statements im Programm durchgehen
@@ -48,26 +69,21 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
             ASTNode node = visit(stmtCtx);
             if (node instanceof Statement stmt) {
                 statements.add(stmt);
-                System.out.println(stmt); // todo remove
+                // System.out.println(stmt); // todo remove (Auskommentiert für sauberen Pretty Print)
             }
         }
-
+        System.out.println("kurz vor zurückgeben");
         return new ProgramNode(statements);
     }
 
     @Override
     public ASTNode visitStmt(CplusplusParser.StmtContext ctx) {
-
-       /* RuleContext g = ctx.getPayload();
-        if(g instanceof CplusplusParser.If_stmtContext i){visitIf_stmt(ctx)}*/
-        //(g instanceof CplusplusParser.Constructor_callContext)
-
-        return visitChildren(ctx);
-        //return visit(ctx.getChild(0));
+        if (ctx.getChildCount() > 0) {
+            return visit(ctx.getChild(0));
+        }
+        return null;
     }
 
-    //Point q = Point(3, 4);
-    //Point(3, 4);
     @Override
     public ASTNode visitConstructor_call(CplusplusParser.Constructor_callContext ctx) {
         IDType type = (IDType) visit(ctx.type());
@@ -78,11 +94,9 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitConstructor_decl(CplusplusParser.Constructor_declContext ctx) {
-
         String name = ctx.ID().getText();
         IDNode id = new IDNode(name);
         BlockNode block = (BlockNode) visit(ctx.f_block());
-        //List<SingleParamNode> params  =
         ParamNodeDecl params = ((ParamNodeDecl) visit(ctx.parameter_decl()));
         return new ConDeclNode(id, params, block);
     }
@@ -109,13 +123,24 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitF_block(CplusplusParser.F_blockContext ctx) {
-        System.out.println("fblock");
-        return visitChildren(ctx);
+        // System.out.println("fblock"); // Debug Output entfernt für Clean Print
+        List<Statement> body = new ArrayList<>();
+        for (CplusplusParser.StmtContext stmtCtx : ctx.stmt()) {
+            ASTNode node = visit(stmtCtx);
+            if (node instanceof Statement) {
+                body.add((Statement) node);
+            }
+        }
+
+        ReturnNode ret = null;
+        if (ctx.return_() != null) {
+            ret = (ReturnNode) visit(ctx.return_());
+        }
+        return new FBlockNode(ret, body);
     }
 
     @Override
     public ASTNode visitF_call(CplusplusParser.F_callContext ctx) {
-
         String name = ctx.ID().getText();
         IDNode id = new IDNode(name);
         ParamCallNode params = (ParamCallNode) visit(ctx.parameter_call());
@@ -127,7 +152,6 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
         List<Expression> params = new ArrayList<>();
         for (CplusplusParser.ExprContext exprContext : ctx.expr()) {
             Expression n = (Expression) visit(exprContext);
-
             params.add(n);
         }
         return new ParamCallNode(params);
@@ -135,11 +159,9 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitParameter_decl(CplusplusParser.Parameter_declContext ctx) {
-
         List<SingleParamNode> params = new ArrayList<>();
 
         if (ctx.getChildCount() != 0) {
-
             for (int i = 0; i < ctx.parameter().size(); i++) {
                 params.add((SingleParamNode) visit(ctx.parameter(i)));
             }
@@ -163,7 +185,6 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitIf_stmt(CplusplusParser.If_stmtContext ctx) {
-        //ComNode com = (ComNode) visit(ctx.expr()); mit ComNode?
         Expression com = (Expression) visit(ctx.logExpr());
         BlockNode thenblock = (BlockNode) visit(ctx.then_block());
         BlockNode elseBlock = null;
@@ -175,24 +196,20 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitBool(CplusplusParser.BoolContext ctx) {
-        // -- not with visit v --
         boolean b = Boolean.parseBoolean(ctx.getText());
         return new BoolNode(b);
     }
 
     @Override
     public ASTNode visitBlock(CplusplusParser.BlockContext ctx) {
-        System.out.println("block");
+        // System.out.println("block"); // Debug Output entfernt
         List<Statement> body = new ArrayList<>();
         for (CplusplusParser.StmtContext stmtCtx : ctx.stmt()) {
-
             ASTNode node = visit(stmtCtx);
-
             if (node instanceof Statement) {
                 body.add((Statement) node);
             }
         }
-
         return new BlockNode(body);
     }
 
@@ -212,7 +229,6 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitAtom(CplusplusParser.AtomContext ctx) {
-
         if (ctx.INT() != null) {
             String content = ctx.INT().getText();
             String sign = null;
@@ -225,13 +241,10 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
             return visit(ctx.bool());
         } else if (ctx.CHAR() != null) {
             String rawText = ctx.CHAR().getText();
-            // index 1 da : 'x' , x = pos 1
             char c = rawText.charAt(1);
             return new CharNode(c);
         } else if (ctx.LITERAL() != null) {
-
             String rawText = ctx.LITERAL().getText();
-            // index 2 da : '\x' , x = pos 2
             char c = rawText.charAt(2);
             return new LitNode(c);
         } else if (ctx.ID() != null) {
@@ -240,8 +253,6 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
         } else if (ctx.STRING() != null) {
             String content = ctx.STRING().getText();
             return new StringNode(content);
-            // definieren(als nodes oder anders).
-            // definieren(als nodes oder anders).
         } else {
             throw new RuntimeException("Bing Bing Bing, das haut nich hin");
         }
@@ -249,7 +260,6 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitType(CplusplusParser.TypeContext ctx) {
-
         if (ctx.ID() != null) {
             IDNode id = (IDNode) visit(ctx.ID());
             return id;
@@ -289,9 +299,7 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
         Type t = (Type) visit(ctx.type());
         String name = ctx.ID().getText();
         IDNode id = new IDNode(name);
-        //checkForLogicalOperator(ctx.expr()); //überprüft ob Expr eine logische Operation ist
         Expression expr = (Expression) visit(ctx.expr());
-
         return new InitNode(t, id, and, expr);
     }
 
@@ -304,7 +312,6 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
             i++;
         }
         id = new IDNode(ctx.ID(i).getText());
-        //checkForLogicalOperator(ctx.expr());  //überprüft ob Expr eine logische Operation ist
         Expression value = (Expression) visit(ctx.expr());
         return new AssiNode(objectId, id, value);
     }
@@ -388,24 +395,68 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
         Expression child2 = (Expression) visit(ctx.le2);
         return new LogischeExpressionNode(child1, "<=", child2);
     }
-    /*
-    public void checkForLogicalOperator(CplusplusParser.ExprContext expr) {
-        if (expr instanceof CplusplusParser.AndContext) {
-            throw new RuntimeException("&& nicht erlaubt in Assign");
-        } else if (expr instanceof CplusplusParser.OrContext) {
-            throw new RuntimeException("|| nicht erlaubt in Assign");
-        } else if (expr instanceof CplusplusParser.GreaterThenContext) {
-            throw new RuntimeException("> nicht erlaubt in Assign");
-        } else if (expr instanceof CplusplusParser.LessThenContext) {
-            throw new RuntimeException("< nicht erlaubt in Assign");
-        } else if (expr instanceof CplusplusParser.GreaterOrEqualContext) {
-            throw new RuntimeException(">= nicht erlaubt in Assign");
-        } else if (expr instanceof CplusplusParser.LessOrEqualContext) {
-            throw new RuntimeException("<= nicht erlaubt in Assign");
-        } else if (expr instanceof CplusplusParser.DoubleEqualContext) {
-            throw new RuntimeException("== nicht erlaubt in Assign");
-        } else if (expr instanceof CplusplusParser.NotEqualContext) {
-            throw new RuntimeException("!= nicht erlaubt in Assign");
+
+    // ==========================================
+    // PRETTY PRINT FUNKTIONALITÄT
+    // ==========================================
+
+    /**
+     * Rufe diese Methode in deiner Main auf: ASTGenerator.print(meinEigenerAST);
+     */
+    public static void print(ASTNode node) {
+        System.out.println("AST Output:");
+        printRecursive(node, "", true);
+    }
+
+    private static void printRecursive(Object obj, String indent, boolean isLast) {
+        if (obj == null) return;
+
+        // Visualisierung der Baum-Struktur
+        String marker = isLast ? "└── " : "├── ";
+        System.out.print(indent + marker);
+
+        // Fall 1: Listen (z.B. List<Statement>)
+        if (obj instanceof Collection<?>) {
+            Collection<?> list = (Collection<?>) obj;
+            System.out.println("List [" + list.size() + "]");
+            int i = 0;
+            for (Object item : list) {
+                printRecursive(item, indent + (isLast ? "    " : "│   "), i == list.size() - 1);
+                i++;
+            }
+            return;
         }
-    }*/
+
+        // Fall 2: Unsere AST Nodes (rekursiv Felder auslesen)
+        if (obj instanceof ASTNode) {
+            Class<?> clazz = obj.getClass();
+            System.out.println(clazz.getSimpleName()); // z.B. "WhileNode"
+
+            // Felder per Reflection holen (funktioniert auch mit Java Records)
+            Field[] fields = clazz.getDeclaredFields();
+            for (int i = 0; i < fields.length; i++) {
+                Field f = fields[i];
+                f.setAccessible(true);
+                try {
+                    Object value = f.get(obj);
+                    // Rekursiver Abstieg für Feldwerte
+                    System.out.print(indent + (isLast ? "    " : "│   ") + "├─ " + f.getName() + ": ");
+
+                    if (value instanceof ASTNode || value instanceof Collection) {
+                        System.out.println(); // Neue Zeile für komplexe Objekte
+                        printRecursive(value, indent + (isLast ? "    " : "│   ") + "│  ", true);
+                    } else {
+                        // Einfache Werte (Strings, Zahlen, Booleans, Null) direkt drucken
+                        System.out.println(value);
+                    }
+                } catch (IllegalAccessException e) {
+                    System.out.println("[Access Denied]");
+                }
+            }
+            return;
+        }
+
+        // Fall 3: Alles andere (Strings, Zahlen, etc.)
+        System.out.println(obj.toString());
+    }
 }

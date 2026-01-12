@@ -29,6 +29,11 @@ public class Symbol {
         return connectedNode;
     }
 
+    public void setScope(Scope s)
+    {
+        this.scope = s;
+    }
+
     public Scope getScope() {
         return scope;
     }

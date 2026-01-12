@@ -5,7 +5,6 @@ import java.util.Map;
 
 public class Scope {
 
-
     private Map<String,Symbol> symbolMap = new HashMap<>();
     private Scope parent;
 
@@ -16,6 +15,7 @@ public class Scope {
     public Scope getParent() {
         return parent;
     }
+    public void setParent(Scope p){this.parent = p; }
 
     //suchen
     public Symbol resolve(String name) {
