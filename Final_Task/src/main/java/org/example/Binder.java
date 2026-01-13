@@ -9,6 +9,16 @@ public class Binder {
 
     private Scope currentScope;
     private Scope classScopes;
+    private Map<ASTNode,Scope> nodeScope = new HashMap<>();
+
+    public Map<ASTNode,Scope> getNodeScope()
+    {
+        return nodeScope;
+    }
+
+    public Scope getClassScopes() {
+        return this.classScopes;
+    }
 
     public Binder() {
         // Globaler Scope (Eltern-Scope ist null)
@@ -30,7 +40,7 @@ public class Binder {
     }
 
     // Statements geben keinen Typ zurück (void)
-    public void visitStmt(Statement statement) {
+    private void visitStmt(Statement statement) {
 
         switch (statement) {
             case InitNode i    -> visitInit(i); //
@@ -50,32 +60,36 @@ public class Binder {
             case Block b       -> visitBlock(b); //
             default ->
                     throw new IllegalArgumentException("Unbekannter Knotentyp: " + statement.getClass().getSimpleName());
-
         }
     }
 
-
     // =============== visit methods Statements with bind ==============================
 
-    public void visitInit(InitNode initNode) {
+    private void visitInit(InitNode initNode) {
+
         Symbol s = new Symbol(initNode.id().name(),
                 initNode.type(),
                 initNode,
                 currentScope,
                 initNode.and());
         currentScope.bind(s);
+
+        nodeScope.put(initNode, currentScope);
+
     }
 
-    public void visitDecl(DeclNode declNode) {
+    private void visitDecl(DeclNode declNode) {
         Symbol s = new Symbol(declNode.id().name(),
                 declNode.type(),
                 declNode,
                 currentScope,
                 declNode.and());
         currentScope.bind(s);
+        
+        nodeScope.put(declNode, currentScope);
     }
 
-    public void visitFDecl(FDeclNode f) {
+    private void visitFDecl(FDeclNode f) {
         Symbol ids = new Symbol(f.id().name(), f.type(), f, currentScope, f.and());
         currentScope.bind(ids);
         //neuer Scope
@@ -90,7 +104,7 @@ public class Binder {
     }
 
     //momentan kann eine Klasse die eine Vererbung hat, nicht als Superklasse genutzt werden
-    public void visitCDecl(CDeclNode c) {
+    private void visitCDecl(CDeclNode c) {
 
         //Klassenname an globalen Scope binden
         Symbol clas = new Symbol(c.name().name(), c.name(), c, currentScope, false);
@@ -125,7 +139,7 @@ public class Binder {
         }
     }
 
-    public void visitConDecl(ConDeclNode c) {
+    private void visitConDecl(ConDeclNode c) {
         // Logik für Konstruktor-Deklarationen
         Symbol sym = new Symbol(c.name().name(), c.name(), c, currentScope, false);
         currentScope.bind(sym);
@@ -141,7 +155,7 @@ public class Binder {
 
     // ==================================== binden über umwege ======================
 
-    public void visitBlock(BlockNode b) {
+    private void visitBlock(BlockNode b) {
         Scope blockScope = new Scope(currentScope);
         this.currentScope = blockScope; // Scope wechseln
         for (Statement s : b.body()) {
@@ -150,27 +164,27 @@ public class Binder {
         this.currentScope = currentScope.getParent();
     }
 
-    public void visitFBlock(FBlockNode b) {
+    private void visitFBlock(FBlockNode b) {
 
         for (Statement s : b.body()) {
             visitStmt(s);
         }
     }
 
-    public void visitCBlock(CBlockNode b) {
+    private void visitCBlock(CBlockNode b) {
         for (Statement s : b.body()) {
             visitStmt(s);
         }
     }
 
-    public void visitIf(IfNode i) {
+    private void visitIf(IfNode i) {
         visitStmt(i.thenBlock());
         if (i.elseBlock() != null) {
             visitStmt(i.elseBlock());
         }
     }
 
-    public void visitWhile(WhileNode w) {
+    private void visitWhile(WhileNode w) {
         visitStmt(w.block());
     }
 
@@ -181,19 +195,19 @@ public class Binder {
         return;
     }
 
-    public void visitBlock(Block b) {
+    private void visitBlock(Block b) {
         System.out.println("Error " + b + " Block ");
     }
 
-    public void visitConCall(ConCallNode c) {
+    private void visitConCall(ConCallNode c) {
         return;
     }
 
-    public void visitFCall(FCallNode f) {
+    private void visitFCall(FCallNode f) {
         return;
     }
 
-    public void visitMCallStmt(MCall m) {
+    private void visitMCallStmt(MCall m) {
 
     }
 

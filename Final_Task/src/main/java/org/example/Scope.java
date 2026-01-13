@@ -36,4 +36,5 @@ public class Scope {
     }//bind
 
 
+//        else: return None     # not found
 }

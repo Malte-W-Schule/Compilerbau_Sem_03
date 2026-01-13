@@ -57,7 +57,7 @@ record WhileNode(Expression com, Block block) implements ASTNode,Statement{}
 record FDeclNode(boolean virtual, Type type, boolean and, IDNode id, ParamNodeDecl params, Block block) implements ASTNode,Statement {}
 record FCallNode(IDNode id, ParamCallNode params) implements ASTNode, Statement, Expression{}
 // === Parameter ===
-record ParamNode(ParamCallNode params)implements ASTNode{}
+//record ParamNode(ParamCallNode params)implements ASTNode{} //todo doppeltgemoppelt?
 record ParamCallNode(List<Expression> params)implements ASTNode{}
 record ParamNodeDecl(List<SingleParamNode> params)implements ASTNode{}
 record SingleParamNode(Type type, boolean and, IDNode id) implements ASTNode {}
