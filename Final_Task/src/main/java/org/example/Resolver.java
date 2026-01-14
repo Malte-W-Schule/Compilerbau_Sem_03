@@ -1,5 +1,6 @@
 package org.example;
 
+import java.io.FileDescriptor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -9,22 +10,36 @@ public class Resolver {
     private Binder binder;
 
     private Scope currentScope;
+    private Map<ASTNode, Scope> nodeScope = new HashMap<>();
 
     public Resolver(Binder binder) {
         // Globaler Scope (Eltern-Scope ist null)
         currentScope = new Scope(null);
         this.binder = binder;
+        this.nodeScope = binder.getNodeScope();
     }
 
     private void runMapNodes() {
-
+        //todo change fo reach map to visit ast
         binder.getNodeScope().forEach((node, scope) -> {
             this.currentScope = scope;
             resolve(node);
         });
     }
 
-    public void resolve(ASTNode node) {
+    public void resolve(ProgramNode node) {
+        for (ASTNode n : node.statements()) {
+            if (n instanceof Statement) {
+                resolve((Statement) n);
+            } else if (n instanceof Expression) {
+                resolve((Expression) n);
+            } else {
+                System.out.println("Was Zum Kuckuck ist: " + node.toString());
+                throw new RuntimeException("kein Statement oder Expression");
+            }
+        }
+
+        /*
         if (node instanceof Statement) {
             resolve((Statement) node);
         } else if (node instanceof Expression) {
@@ -36,7 +51,7 @@ public class Resolver {
                 resolve(s.type());
                 //Type type, boolean and, IDNode id // todo id node? resolven
             }
-        }
+        }*/
 
 
         {
@@ -101,22 +116,25 @@ public class Resolver {
         };
     }
 
-//===================== aktiv resolven ================
+    //===================== aktiv resolven ================
     // == visit Statements ==
     private void visitInit(InitNode initNode) {
         //String idName = initNode.id().name();
         //currentScope.resolve(idName); //todo id nicht resolven, da diese binded wurden?
-        currentScope.resolve( resolve(initNode.value()).toString() ); //todo tostring?
+        //Scope scope = nodeScope.get(initNode);
+        currentScope.resolve(resolve(initNode.value()).toString()); //todo tostring?
     }
+
     //x = m.f() + 4 * 5
     private void visitAssi(AssiNode assiNode) {//record AssiNode(IDNode id, Expression value) implements Statement, ASTNode{}
         Symbol lhs = currentScope.resolve(assiNode.id().name());
-        Symbol rhs = currentScope.resolve(resolve(assiNode.value()).toString()); //todo tostring?
-
-        if (lhs.getType() != rhs.getType()) {
+        //Symbol rhs = currentScope.resolve(resolve(assiNode.value()).toString());
+        Expression rhs = assiNode.value();
+        Type t = resolve(rhs);
+        if (lhs.getType() != t) {
             System.out.println("ohoh!!");
         }
-        if(assiNode.objectId().name()!=null) {
+        if (assiNode.objectId().name() != null) {
             currentScope.resolve(assiNode.objectId().name());
         }//objectid klassending aufruf klasse.id (object.id)
     }
@@ -132,16 +150,29 @@ public class Resolver {
     }
 
 
-    // ======================= gar nix machen ==================
     private void visitBlock(Block b) {
-        System.out.println("Error " + b + " Block ");
+        System.out.print("Fehler Block");
     }
 
     private void visitFCall(FCallNode f) {
         currentScope.resolve(f.id().name());
+        //hole FdeclNode aus Map mit ID==f.ID
+        //hole fBlockNode von FDeclNode
+        //hole Scope von fBlockNode
+        Symbol fDecl = currentScope.resolve(f.id().name());
+        FDeclNode fDeclNode = (FDeclNode) fDecl.getConnectedNode();
+        Scope tempScpoe = this.currentScope;
+        this.currentScope = nodeScope.get(fDeclNode.block());
         for (Expression s : f.params().params()) {
+            //gucke ob der Parameter definiert ist
+
+            //gucke, ob der Typ des Parameters zu dem definierten Typ Passt
+
             resolve(s);
         }
+
+        this.currentScope = tempScpoe;
+        //kein rückgabewert da Statements
     }
 
     private void visitConCall(ConCallNode c) {
@@ -163,7 +194,7 @@ public class Resolver {
 
     private Type visitMCallExpr(MCall m) {
         currentScope.resolve(m.fName().name()).getType();
-        resolve(m.params());
+        resolve(m.params()); //todo fehler
         currentScope.resolve(m.clars().name());
         Scope classScopes = binder.getClassScopes();
         Symbol clars = classScopes.resolve(m.clars().name());
@@ -183,16 +214,21 @@ public class Resolver {
     }
 
     private void visitBlock(BlockNode b) {
-
+        this.currentScope = nodeScope.get(b);
         for (Statement s : b.body()) {
             resolve(s);
         }
-
+        this.currentScope = currentScope.getParent();
     }
 
     private void visitFBlock(FBlockNode b) {
         for (Statement s : b.body()) {
             resolve(s);
+        }
+
+        if(b.ret() != null) //todo gucken wo resolve void returned und wie?
+        {
+            resolve(b.ret().value());
         }
     }
 
@@ -289,6 +325,9 @@ public class Resolver {
     }
 
     public void visitCDecl(CDeclNode c) {
+        this.currentScope = nodeScope.get(c);
+        resolve(c.block());
+        this.currentScope = currentScope.getParent();
 /*
         if (c.isInherit()) {
             //Scope inheritScope = resolveClass(c.inherit().name());

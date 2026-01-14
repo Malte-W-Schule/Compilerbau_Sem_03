@@ -135,7 +135,8 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
         ReturnNode ret = null;
         if (ctx.return_() != null) {
             ret = (ReturnNode) visit(ctx.return_());
-        }
+        }//todo return voidytpe here?
+
         return new FBlockNode(ret, body);
     }
 
