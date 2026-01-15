@@ -20,10 +20,10 @@ public class Resolver {
     }
 
     private void runMapNodes() {
-        //todo change fo reach map to visit ast
+        //todo change fo reach map to visit ast -> change to visit instead of for each
         binder.getNodeScope().forEach((node, scope) -> {
             this.currentScope = scope;
-            resolve(node);
+            //resolve(node);
         });
     }
 

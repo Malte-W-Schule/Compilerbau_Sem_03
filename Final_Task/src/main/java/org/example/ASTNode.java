@@ -5,7 +5,6 @@ import com.sun.nio.sctp.AbstractNotificationHandler;
 import java.util.List;
 
 public interface ASTNode {
-
     default void A()
     {
         System.out.println(this);

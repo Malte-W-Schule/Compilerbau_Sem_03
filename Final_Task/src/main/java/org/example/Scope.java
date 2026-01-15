@@ -25,7 +25,7 @@ public class Scope {
         return null;
     }
 
-    //zuwesien
+    //zuweisen
     public boolean bind(Symbol symbol) {
         if (symbolMap.containsKey(symbol.getName())) {
             System.out.println("Error: Symbol '" + symbol.getName() + "' schon definiert");
@@ -35,6 +35,15 @@ public class Scope {
         return true;
     }//bind
 
+    public boolean isNameInMap(String name){
+        if(symbolMap.containsValue(name)) {
+            return true;
+        }
+        return false;
+    }
 
-//        else: return None     # not found
+    public Symbol getSymbolMap(String name){
+        Symbol s = symbolMap.get(name);
+        return s;
+    }
 }

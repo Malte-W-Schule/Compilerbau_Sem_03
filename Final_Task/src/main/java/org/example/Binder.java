@@ -1,28 +1,21 @@
 package org.example;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Binder {
 
     private Scope currentScope;
-    private Scope classScopes;
-    private Map<ASTNode, Scope> nodeScope = new HashMap<>();
+    private Map<ASTNode, Scope> nodeScope = new IdentityHashMap<>(); //sehr gut
+    //identity hashmap?
 
     public Map<ASTNode, Scope> getNodeScope() {
         return nodeScope;
     }
 
-    public Scope getClassScopes() {
-        return this.classScopes;
-    }
 
     public Binder() {
         // Globaler Scope (Eltern-Scope ist null)
         currentScope = new Scope(null);
-        classScopes = new Scope(null);
     }
 
     public void visitProgram(ProgramNode node) {
@@ -94,7 +87,7 @@ public class Binder {
         nodeScope.put(l,currentScope);
     }
 
-    private void visitArithmetischeExpressionNode(LogischeExpressionNode a) {
+    private void visitArithmetischeExpressionNode(ArithmetischeExpressionNode a) {
         nodeScope.put(a,currentScope);
     }
 
@@ -144,37 +137,45 @@ public class Binder {
     private void visitCDecl(CDeclNode c) {
 
         //Klassenname an globalen Scope binden
-        Symbol clas = new Symbol(c.name().name(), c.name(), c, currentScope, false);
-        currentScope.bind(clas);
-
+        //Symbol clas = new Symbol(c.name().name(), c.name(), c, currentScope, false);
+        //currentScope.bind(clas);
+        //todo
         if (c.isInherit()) {
+            Symbol superClazzSymbol = currentScope.resolve(c.inherit().name());
+            Clazz clazzScope = (Clazz) superClazzSymbol.getScope();
 
             Scope globalScope = currentScope;
-            this.currentScope = new Scope(currentScope);
+            currentScope.resolve(c.inherit().name());
 
+            this.currentScope = new Clazz(currentScope, clazzScope);//Patrick sagt, ist richtig
             visitStmt(c.block());
 
-            Symbol superKlasse = classScopes.resolve(c.inherit().name()); // parent/inherit scope getten
-            //inherit scope parent setzen zu currentscope
-            Scope superklassenScope = superKlasse.getScope();
-            this.currentScope.setParent(superklassenScope);
+            Symbol clas = new Symbol(c.name().name(), c.name(), c, currentScope, false);
             nodeScope.put(c, currentScope);
             this.currentScope = globalScope; // current scope zurück auf global setzen
+            currentScope.bind(clas);
 
         } else {
             //neuer Scope der Klasse
-            currentScope = new Scope(currentScope);
+            this.currentScope = new Clazz(this.currentScope);
             //neues Symbol das Klassenscope speichert für spätere Vererbung
-            Symbol klassenSymbol = new Symbol(c.name().name(), c.name(), c, currentScope, false);
-            classScopes.bind(klassenSymbol);
-            currentScope.bind(klassenSymbol);
+            //Symbol klassenSymbol = new Symbol(c.name().name(), c.name(), c, currentScope, false);
+            //classscope.bind(klassenSymbol);
+            //currentScope.bind(klassenSymbol);
             //alles im Block an currentScope speichern, Parent ist global weil keine Vererbung
             visitStmt(c.block());
             //current scope zurück setzen
+            Symbol clas = new Symbol(c.name().name(), c.name(), c, currentScope, false);
             nodeScope.put(c, currentScope);
             this.currentScope = currentScope.getParent();
+            currentScope.bind(clas);
         }
     }
+
+    //class foo {
+    //  wuppie(){}
+    //}
+    //foo.wuppie();
 
     private void visitConDecl(ConDeclNode c) {
         // Logik für Konstruktor-Deklarationen
