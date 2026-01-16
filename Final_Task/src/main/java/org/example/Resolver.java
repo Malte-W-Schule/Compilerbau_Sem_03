@@ -19,14 +19,6 @@ public class Resolver {
         this.nodeScope = binder.getNodeScope();
     }
 
-    private void runMapNodes() {
-        //todo change fo reach map to visit ast -> change to visit instead of for each
-        binder.getNodeScope().forEach((node, scope) -> {
-            this.currentScope = scope;
-            //resolve(node);
-        });
-    }
-
     public void resolve(ProgramNode node) {
         for (ASTNode n : node.statements()) {
             if (n instanceof Statement) {
@@ -38,21 +30,6 @@ public class Resolver {
                 throw new RuntimeException("kein Statement oder Expression");
             }
         }
-
-        /*
-        if (node instanceof Statement) {
-            resolve((Statement) node);
-        } else if (node instanceof Expression) {
-            resolve((Expression) node);
-        } else if(node instanceof ParamNodeDecl){
-            ParamNodeDecl p = (ParamNodeDecl) node;
-            for(SingleParamNode s : p.params())
-            {
-                resolve(s.type());
-                //Type type, boolean and, IDNode id // todo id node? resolven
-            }
-        }*/
-
 
         {
             System.out.println("Was Zum Kuckuck ist: " + node.toString());
@@ -78,25 +55,11 @@ public class Resolver {
             case CDeclNode c -> visitCDecl(c);
             case ConDeclNode c -> visitConDecl(c);
             case ConCallNode c -> visitConCall(c);
-            case MCall m -> visitMCallStmt(m);
+            //case MCall m -> visitMCallStmt(m);
             case Block b -> visitBlock(b);
             default ->
                     throw new IllegalArgumentException("Unbekannter Knotentyp: " + statement.getClass().getSimpleName());
         }
-    }
-
-    public void visitConDecl(ConDeclNode c) {
-        // Logik für Konstruktor-Deklarationen
-        Symbol sym = new Symbol(c.name().name(), c.name(), c, currentScope, false);
-        currentScope.bind(sym);
-        this.currentScope = new Scope(currentScope);
-        //Parameter binden
-        for (SingleParamNode p : c.params().params()) {
-            Symbol s = new Symbol(p.id().name(), p.type(), c, currentScope, p.and());
-            currentScope.bind(s);
-        }
-        resolve(c.block());
-        currentScope = currentScope.getParent();
     }
 
     // Expressions MÜSSEN einen PrimType zurückgeben
@@ -107,13 +70,51 @@ public class Resolver {
             case StringNode s -> new StringType();
             case BoolNode b -> new BoolType();
             case CharNode c -> new CharType();
-            case MCall m -> visitMCallExpr(m);
-            case FCallNode f -> visitFCallExpr(f);
+            case MCall m -> visitMCall(m);
+            case FCallNode f -> visitFCall(f);
             case LogischeExpressionNode e -> visitLogischeExpressionNode(e);
             case ArithmetischeExpressionNode e -> visitArithmetischeExpressionNode(e);
-
+            case IDNode id -> visitID(id);
             default -> throw new IllegalStateException("Unexpected value: " + expression);
         };
+    }
+
+    public Type visitID(IDNode id)
+    {
+        Symbol s = currentScope.resolve(id.name());
+        if(s != null)
+        {
+            return s.getType();
+
+        } //todo bedenken
+        return new VoidType();
+    }
+
+    //================== Deklarationen ============================
+    public void visitConDecl(ConDeclNode c) {
+        this.currentScope = nodeScope.get(c);
+        resolve(c.block());
+        this.currentScope = currentScope.getParent();
+    }
+
+    private void visitDecl(DeclNode declNode) {
+        this.currentScope.resolve(declNode.id().name());
+    }
+
+    public void visitFDecl(FDeclNode f) {
+        this.currentScope = nodeScope.get(f);
+        resolve(f.block());
+        this.currentScope = currentScope.getParent();
+    }
+
+    public void visitCDecl(CDeclNode c) {
+        this.currentScope = nodeScope.get(c);
+        resolve(c.block());
+        this.currentScope = currentScope.getParent();
+    }
+
+    private void visitCDeclHelper(CDeclNode c) {
+        resolve(c.block());
     }
 
     //===================== aktiv resolven ================
@@ -128,6 +129,7 @@ public class Resolver {
     //x = m.f() + 4 * 5
     private void visitAssi(AssiNode assiNode) {//record AssiNode(IDNode id, Expression value) implements Statement, ASTNode{}
         Symbol lhs = currentScope.resolve(assiNode.id().name());
+        System.out.println(currentScope.toString());
         //Symbol rhs = currentScope.resolve(resolve(assiNode.value()).toString());
         Expression rhs = assiNode.value();
         Type t = resolve(rhs);
@@ -144,44 +146,79 @@ public class Resolver {
         resolve(w.block()); //todo com in block scope?
     }
 
-    private void visitDecl(DeclNode declNode) {
-        currentScope.resolve(declNode.id().name());  //todo idk ob das klappt mit object typen id
-        return;
+    //prüft Anzahl und Typen
+    private void checkParameter(ParamNodeDecl paramDecl, ParamCallNode paramCall) {
+        if (paramDecl.params().size() != paramCall.params().size()) {
+            throw new RuntimeException("Anzahl Parameter bei Übergabe stimmt nicht mit deklarierten überein");
+        }
+
+        for (int i = 0; i < paramCall.params().size(); i++) {
+            Type typeDecl = paramDecl.params().get(i).type();
+            Type typeCall = resolve(paramCall.params().get(i));
+            if (typeDecl != typeCall) {
+                throw new RuntimeException("Typen der Paramter stimmen nicht überein");
+            }
+        }
     }
 
+    private Type checkReturn(FBlockNode fBlock, Symbol fSymbol) {
+        Type retType = resolve(fBlock.ret().value());
+        if (retType == null) {
+            System.out.println("return type null in: " + fBlock.toString());
+        }
+
+        if (retType instanceof VoidType) {
+            Type func = fSymbol.getType();
+            if (func != retType) {
+                throw new RuntimeException("Typen der Funktion und des Rückgabewertes stimmen nicht überein");
+            }
+        }
+        return retType;
+    }
 
     private void visitBlock(Block b) {
         System.out.print("Fehler Block");
     }
 
-    private void visitFCall(FCallNode f) {
-        currentScope.resolve(f.id().name());
-        //hole FdeclNode aus Map mit ID==f.ID
-        //hole fBlockNode von FDeclNode
-        //hole Scope von fBlockNode
+    private Type visitFCall(FCallNode f) {
+        Scope tempScope = this.currentScope;
         Symbol fDecl = currentScope.resolve(f.id().name());
+        Scope fBlockScope = fDecl.getScope();
+        this.currentScope = fBlockScope;
+
         FDeclNode fDeclNode = (FDeclNode) fDecl.getConnectedNode();
-        Scope tempScpoe = this.currentScope;
-        this.currentScope = nodeScope.get(fDeclNode.block());
-        for (Expression s : f.params().params()) {
-            //gucke ob der Parameter definiert ist
 
-            //gucke, ob der Typ des Parameters zu dem definierten Typ Passt
+        ParamNodeDecl paramDecl = (ParamNodeDecl) fDeclNode.params();
+        ParamCallNode paramCall = f.params();
+        //prüft Anzahl und Typen der Parameter
+        checkParameter(paramDecl, paramCall);
 
-            resolve(s);
-        }
+        //return typ vergleichen, wenn einer existiert, der return steht im Block
+        FBlockNode fBlock = (FBlockNode) fDeclNode.block();
 
-        this.currentScope = tempScpoe;
-        //kein rückgabewert da Statements
+        this.currentScope = tempScope;
+
+        return checkReturn(fBlock, fDecl);
     }
+
 
     private void visitConCall(ConCallNode c) {
-        currentScope.resolve(c.name().name());
-        for (Expression e : c.params().params()) {
-            resolve(e);
-        }
-    }
 
+        Scope tempScope = this.currentScope;
+        Symbol cDecl = currentScope.resolve(c.name().name());
+        Scope cBlockScope = cDecl.getScope();
+        this.currentScope = cBlockScope;
+
+        ConDeclNode cDeclNode = (ConDeclNode) cDecl.getConnectedNode();
+
+        ParamNodeDecl paramDecl = (ParamNodeDecl) cDeclNode.params();
+        ParamCallNode paramCall = c.params();
+        //prüft Anzahl und Typen der Parameter
+        checkParameter(paramDecl, paramCall);
+
+        this.currentScope = tempScope;
+    }
+    /*
     private void visitMCallStmt(MCall m) {//todo inherit scope
         //Klasse ist im globalen Scope, sollte so gehen
         currentScope.resolve(m.clars().name());
@@ -190,18 +227,31 @@ public class Resolver {
         for (Expression e : m.params().params()) {
             resolve(e);
         }
-    }
+    }*/
 
-    private Type visitMCallExpr(MCall m) {
-        currentScope.resolve(m.fName().name()).getType();
-        resolve(m.params()); //todo fehler
-        currentScope.resolve(m.clars().name());
-        Scope classScopes = binder.getClassScopes();
-        Symbol clars = classScopes.resolve(m.clars().name());
-        Scope localScope = clars.getScope();
-        Symbol f = localScope.resolve(m.fName().name());
+    private Type visitMCall(MCall m) {
 
-        return f.getType(); //todo denken, classe.function suchen und davon return type returnen
+        Symbol classSymbol = currentScope.resolve(m.clars().name()); // todo ist clars cdeclnode?
+        this.currentScope = classSymbol.getScope();
+
+        // Symbol von function getten um paras über fdecl node zu holen
+        Symbol fSymbol = currentScope.resolve(m.fName().name());
+
+        // function declare node für paramsdecl getten
+        FDeclNode fDeclNode = (FDeclNode) fSymbol.getConnectedNode();
+
+        // params nodes getten für decl und call
+        ParamNodeDecl paramNodeDecl = fDeclNode.params();
+        ParamCallNode paramCallNode = m.params();
+
+        // params vergleichen
+        checkParameter(paramNodeDecl, paramCallNode);
+
+        FBlockNode fBlock = (FBlockNode) fDeclNode.block();
+
+        this.currentScope = currentScope.getParent();
+
+        return checkReturn(fBlock, fSymbol);
     }
 
 
@@ -226,7 +276,7 @@ public class Resolver {
             resolve(s);
         }
 
-        if(b.ret() != null) //todo gucken wo resolve void returned und wie?
+        if (b.ret() != null) //todo gucken wo resolve void returned und wie?
         {
             resolve(b.ret().value());
         }
@@ -320,33 +370,5 @@ public class Resolver {
         }
     }
 
-    public void visitFDecl(FDeclNode f) {
-        resolve(f.block());
-    }
-
-    public void visitCDecl(CDeclNode c) {
-        this.currentScope = nodeScope.get(c);
-        resolve(c.block());
-        this.currentScope = currentScope.getParent();
-/*
-        if (c.isInherit()) {
-            //Scope inheritScope = resolveClass(c.inherit().name());
-            Scope oldScope = this.currentScope;
-            // this.currentScope = new Scope(inheritScope);
-            //visitCDeclHelper(c);
-
-        } else {
-            currentScope = new Scope(currentScope);
-
-            //visitCDeclHelper(c);
-            //current scope zurück setzen
-            this.currentScope = currentScope.getParent();
-        } */
-        return;
-    }
-
-    private void visitCDeclHelper(CDeclNode c) {
-        resolve(c.block());
-    }
 }
 

@@ -23,7 +23,7 @@ public class Binder {
             if (n instanceof Statement) {
                 visitStmt((Statement) n);
             } else if (n instanceof Expression) {
-                continue;
+                visitExpression((Expression) n);
             } else {
                 System.out.println("Was Zum Kuckuck ist: " + node.toString());
                 throw new RuntimeException("kein Statement oder Expression");
@@ -101,7 +101,6 @@ public class Binder {
                 currentScope,
                 initNode.and());
         currentScope.bind(s);
-
         nodeScope.put(initNode, currentScope);
     }
 
@@ -117,8 +116,6 @@ public class Binder {
     }
 
     private void visitFDecl(FDeclNode f) {
-        Symbol ids = new Symbol(f.id().name(), f.type(), f, currentScope, f.and());
-        currentScope.bind(ids);
         //neuer Scope
         this.currentScope = new Scope(currentScope);
         //Parameter binden
@@ -128,8 +125,12 @@ public class Binder {
         }
 
         visitStmt(f.block());
+
+        Symbol ids = new Symbol(f.id().name(), f.type(), f, currentScope, f.and());
+
         nodeScope.put(f, currentScope);
         currentScope = currentScope.getParent();
+        currentScope.bind(ids);
     }
 
 
@@ -145,7 +146,7 @@ public class Binder {
             Clazz clazzScope = (Clazz) superClazzSymbol.getScope();
 
             Scope globalScope = currentScope;
-            currentScope.resolve(c.inherit().name());
+            //currentScope.resolve(c.inherit().name());
 
             this.currentScope = new Clazz(currentScope, clazzScope);//Patrick sagt, ist richtig
             visitStmt(c.block());
@@ -172,15 +173,8 @@ public class Binder {
         }
     }
 
-    //class foo {
-    //  wuppie(){}
-    //}
-    //foo.wuppie();
-
     private void visitConDecl(ConDeclNode c) {
         // Logik für Konstruktor-Deklarationen
-        Symbol sym = new Symbol(c.name().name(), c.name(), c, currentScope, false);
-        currentScope.bind(sym);
         this.currentScope = new Scope(currentScope);
         //Parameter binden
         for (SingleParamNode p : c.params().params()) {
@@ -188,8 +182,10 @@ public class Binder {
             currentScope.bind(s);
         }
         visitStmt(c.block());
+        Symbol sym = new Symbol(c.name().name(), c.name(), c, currentScope, false);
         nodeScope.put(c, currentScope);
         currentScope = currentScope.getParent();
+        currentScope.bind(sym);
     }
 
     // ==================================== binden über umwege ======================
@@ -205,12 +201,10 @@ public class Binder {
     }
 
     private void visitFBlock(FBlockNode b) {
-
         for (Statement s : b.body()) {
             visitStmt(s);
         }
         // return type;
-
     }
 
     private void visitCBlock(CBlockNode b) {
@@ -255,16 +249,6 @@ public class Binder {
 
     // ========================================
 
-
-
-    /*
-    private void visitCDeclHelper(CDeclNode c) {
-        IDType idType = new IDType(c.name());
-        Symbol sName = new Symbol(c.name().name(), idType, c, currentScope, false);
-        currentScope.bind(sName);
-        classScopes.bind(sName);
-        visitStmt(c.block());
-    }*/
 
 
 }

@@ -20,7 +20,9 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
         IDNode inherit = null;
         boolean isInherit = false;
         if(ctx.ID().size()>1) {
-            inherit = (IDNode) visit(ctx.ID(1)); //0 ist ID Klasse, 1 ist ID der vererbten Klasse
+
+            inherit = new IDNode(ctx.ID(1).getText()); //0 ist ID Klasse, 1 ist ID der vererbten Klasse            System.out.println("Inherit_:"+ );
+
             isInherit = true;
         }//todo inherit scope
         CBlockNode block = (CBlockNode) visit(ctx.class_block());
@@ -87,7 +89,7 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitConstructor_call(CplusplusParser.Constructor_callContext ctx) {
         IDType type = (IDType) visit(ctx.type());
-        IDNode id = (IDNode) visit(ctx.ID());
+        IDNode id = new IDNode(ctx.ID().getText());
         ParamCallNode params = (ParamCallNode) visit(ctx.parameter_call());
         return new ConCallNode(type, id, params);
     }
@@ -313,6 +315,7 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
             i++;
         }
         id = new IDNode(ctx.ID(i).getText());
+        System.out.println(id.toString());
         Expression value = (Expression) visit(ctx.expr());
         return new AssiNode(objectId, id, value);
     }

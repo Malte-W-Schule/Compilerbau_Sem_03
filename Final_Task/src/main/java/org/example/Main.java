@@ -83,7 +83,7 @@ public class Main {
         binder.visitProgram((ProgramNode) meinEigenerAST);
 
         System.out.println("Resolver:");
-        Resolver solver = new Resolver();
+        Resolver solver = new Resolver(binder);
         solver.resolve((ProgramNode) meinEigenerAST);
 
         //System.out.println(tree.toStringTree(meinEigenerAST));
