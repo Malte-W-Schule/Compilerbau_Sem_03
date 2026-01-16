@@ -36,7 +36,7 @@ public class Scope {
     }//bind
 
     public boolean isNameInMap(String name){
-        if(symbolMap.containsValue(name)) {
+        if(symbolMap.get(name) != null) {
             return true;
         }
         return false;

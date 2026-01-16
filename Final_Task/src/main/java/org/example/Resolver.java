@@ -133,7 +133,7 @@ public class Resolver {
         //Symbol rhs = currentScope.resolve(resolve(assiNode.value()).toString());
         Expression rhs = assiNode.value();
         Type t = resolve(rhs);
-        if (lhs.getType() != t) {
+        if (lhs.getType().getClass() != t.getClass()) {
             System.out.println("ohoh!!");
         }
         if (assiNode.objectId().name() != null) {
