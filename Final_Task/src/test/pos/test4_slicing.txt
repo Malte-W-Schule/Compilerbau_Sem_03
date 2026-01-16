@@ -14,7 +14,9 @@ public:
 };
 
 int main() {
-  Der d; d.x = 2; d.y = 5;
+  Der d;
+  d.x = 5;
+  d.y = 5;
 
   Base b2 = d;        // Slicing: b2 enthält nur Base-Anteil (x=2)
   //e.f() = d();
