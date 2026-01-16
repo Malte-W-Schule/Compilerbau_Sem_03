@@ -18,6 +18,7 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
         String name = ctx.ID(0).toString();
         IDNode id = new IDNode(name);
         IDNode inherit = null;
+        Type t = (Type) visit(ctx.CLASS());
         boolean isInherit = false;
         if(ctx.ID().size()>1) {
 
@@ -26,7 +27,7 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
             isInherit = true;
         }//todo inherit scope
         CBlockNode block = (CBlockNode) visit(ctx.class_block());
-        return new CDeclNode(id, inherit , isInherit, block);
+        return new CDeclNode((KlassenType) t, id, inherit , isInherit, block);
     }
 
     @Override public ASTNode visitClass_block(CplusplusParser.Class_blockContext ctx) {
@@ -88,7 +89,7 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitConstructor_call(CplusplusParser.Constructor_callContext ctx) {
-        IDType type = (IDType) visit(ctx.type());
+        KlassenType type = (KlassenType) visit(ctx.type());
         IDNode id = new IDNode(ctx.ID().getText());
         ParamCallNode params = (ParamCallNode) visit(ctx.parameter_call());
         return new ConCallNode(type, id, params);
@@ -263,10 +264,7 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitType(CplusplusParser.TypeContext ctx) {
-        if (ctx.ID() != null) {
-            IDNode id = (IDNode) visit(ctx.ID());
-            return id;
-        } else if (ctx.getText().equals("int")) {
+        if (ctx.getText().equals("int")) {
             return new IntType();
         } else if (ctx.getText().equals("bool")) {
             return new BoolType();
@@ -277,7 +275,8 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
         } else if (ctx.getText().equals("void")) {
             return new VoidType();
         } else {
-            throw new RuntimeException("Bing Bing Bing, das haut nich hin");
+            String name = ctx.ID().getText();
+            return new KlassenType(name);
         }
     }
 

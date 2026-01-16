@@ -4,6 +4,7 @@ import com.sun.nio.sctp.AbstractNotificationHandler;
 
 import java.util.List;
 
+
 public interface ASTNode {
     default void A()
     {
@@ -30,7 +31,7 @@ record BoolType() implements Type {}
 record CharType() implements Type {}
 record StringType() implements Type {}
 record VoidType() implements Type {}
-record IDType(IDNode id) implements Type {}
+record KlassenType(String name) implements Type {}
 
 // === Werte ===
 record IntegerNode(String plusMinusSign, int value) implements Expression, ASTNode{}
@@ -62,13 +63,13 @@ record ParamNodeDecl(List<SingleParamNode> params)implements ASTNode{}
 record SingleParamNode(Type type, boolean and, IDNode id) implements ASTNode {}
 
 // === Class ===
-record CDeclNode(IDNode name, IDNode inherit, boolean isInherit, Block block ) implements ASTNode,Statement{}
+record CDeclNode(KlassenType type, IDNode name, IDNode inherit, boolean isInherit, Block block ) implements ASTNode,Statement{}
 // constructor
 //List<FDeclNode> functions,ConDeclNode constructor
 // Point(int a, int b) { x = a; y = b; }
 record ConDeclNode(IDNode name, ParamNodeDecl params, Block block) implements ASTNode,Statement{};
 //Default: Point p; Parametrisiert: Point p = Point(3, 4);
-record ConCallNode(IDType type, IDNode name, ParamCallNode params) implements ASTNode,Statement, Expression{}
+record ConCallNode(KlassenType type, IDNode name, ParamCallNode params) implements ASTNode,Statement, Expression{}
 
 // === Method Call from class ===
 record MCall(IDNode clars, IDNode fName,ParamCallNode params) implements ASTNode, Statement, Expression{}
