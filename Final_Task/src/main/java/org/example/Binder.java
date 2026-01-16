@@ -16,10 +16,12 @@ public class Binder {
     public Binder() {
         // Globaler Scope (Eltern-Scope ist null)
         currentScope = new Scope(null);
-        Symbol native_print_int = new Symbol("print_int", new VoidType(), new FDeclNode(), this.currentScope, false);
+        Symbol native_print_int = new Symbol("print_int", new VoidType(), new FDeclNode(false, new VoidType(), false, new IDNode("print_int"), new ParamNodeDecl(List.of()), new FBlockNode(new ReturnNode(null), List.of())), this.currentScope, false);
         this.currentScope.bind(native_print_int);
-        Symbol native_print_bool = new Symbol("print_bool", new VoidType(), null, this.currentScope, false);
-        this.currentScope.bind(native_print_bool);
+      /*  Symbol native_print_bool = new Symbol("print_bool", new VoidType(),
+                new FDeclNode(false, new VoidType(), false, new IDNode("print_bool"),
+                        new ParamNodeDecl(List.of(), this.currentScope, false)));
+        this.currentScope.bind(native_print_bool);*/
     }
 
     public void visitProgram(ProgramNode node) {
