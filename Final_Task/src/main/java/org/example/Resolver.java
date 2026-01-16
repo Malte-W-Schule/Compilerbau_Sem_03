@@ -79,11 +79,9 @@ public class Resolver {
         };
     }
 
-    public Type visitID(IDNode id)
-    {
+    public Type visitID(IDNode id) {
         Symbol s = currentScope.resolve(id.name());
-        if(s != null)
-        {
+        if (s != null) {
             return s.getType();
 
         } //todo bedenken
@@ -126,9 +124,29 @@ public class Resolver {
         currentScope.resolve(resolve(initNode.value()).toString()); //todo tostring?
     }
 
-    //x = m.f() + 4 * 5
+    //Der d;
+    //d.x=5;
     private void visitAssi(AssiNode assiNode) {//record AssiNode(IDNode id, Expression value) implements Statement, ASTNode{}
-        Symbol lhs = currentScope.resolve(assiNode.id().name());
+        Symbol lhs;
+        if (assiNode.objectId()!= null && assiNode.objectId().name()!= null) {
+            // ist d definiert
+            Scope temp = this.currentScope;
+            currentScope.resolve(assiNode.objectId().name());
+            // check if class is defined
+            Symbol klassenSymbol = currentScope.resolve(assiNode.objectId().name());
+            // um x zu resolven: wir brauchen Klassenscope des Objekts d.
+            KlassenType klassenType = (KlassenType) klassenSymbol.getType();
+            String klassenName = klassenType.name();
+            Symbol klasse = currentScope.resolve(klassenName);
+            Clazz klassenScope = (Clazz) klasse.getScope();
+            this.currentScope = klassenScope;
+            lhs = currentScope.resolve(assiNode.id().name());
+            this.currentScope = temp;
+        } else {
+
+            lhs = currentScope.resolve(assiNode.id().name());
+        }
+
         System.out.println(currentScope.toString());
         //Symbol rhs = currentScope.resolve(resolve(assiNode.value()).toString());
         Expression rhs = assiNode.value();
@@ -136,9 +154,8 @@ public class Resolver {
         if (lhs.getType().getClass() != t.getClass()) {
             System.out.println("ohoh!!");
         }
-        if (assiNode.objectId().name() != null) {
-            currentScope.resolve(assiNode.objectId().name());
-        }//objectid klassending aufruf klasse.id (object.id)
+
+        //objectid klassending aufruf klasse.id (object.id)
     }
 
     private void visitWhile(WhileNode w) {
@@ -155,7 +172,7 @@ public class Resolver {
         for (int i = 0; i < paramCall.params().size(); i++) {
             Type typeDecl = paramDecl.params().get(i).type();
             Type typeCall = resolve(paramCall.params().get(i));
-            if (typeDecl != typeCall) {
+            if (typeDecl.getClass() != typeCall.getClass()) {
                 throw new RuntimeException("Typen der Paramter stimmen nicht überein");
             }
         }
@@ -169,7 +186,7 @@ public class Resolver {
 
         if (retType instanceof VoidType) {
             Type func = fSymbol.getType();
-            if (func != retType) {
+            if (func.equals(retType)) {
                 throw new RuntimeException("Typen der Funktion und des Rückgabewertes stimmen nicht überein");
             }
         }

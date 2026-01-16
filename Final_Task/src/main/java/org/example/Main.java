@@ -36,6 +36,7 @@ public class Main {
                 i++;
             } catch (Exception e) {
                 System.err.println("Fehler: " + e.getMessage());
+                throw e;
             }
 /*
             for (Path entry : stream) {

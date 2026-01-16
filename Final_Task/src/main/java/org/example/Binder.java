@@ -11,11 +11,15 @@ public class Binder {
     public Map<ASTNode, Scope> getNodeScope() {
         return nodeScope;
     }
-
+    //print_bool, print_int, print_char, print_string
 
     public Binder() {
         // Globaler Scope (Eltern-Scope ist null)
         currentScope = new Scope(null);
+        Symbol native_print_int = new Symbol("print_int", new VoidType(), new FDeclNode(), this.currentScope, false);
+        this.currentScope.bind(native_print_int);
+        Symbol native_print_bool = new Symbol("print_bool", new VoidType(), null, this.currentScope, false);
+        this.currentScope.bind(native_print_bool);
     }
 
     public void visitProgram(ProgramNode node) {
