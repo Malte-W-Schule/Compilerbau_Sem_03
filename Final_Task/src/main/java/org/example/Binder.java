@@ -15,6 +15,7 @@ public class Binder {
 
     public Binder() {
         // Globaler Scope (Eltern-Scope ist null)
+        //todo was diese Native Funktion?
         currentScope = new Scope(null);
         Symbol native_print_int = new Symbol("print_int", new VoidType(), new FDeclNode(false, new VoidType(), false, new IDNode("print_int"), new ParamNodeDecl(List.of()), new FBlockNode(new ReturnNode(null), List.of())), this.currentScope, false);
         this.currentScope.bind(native_print_int);
