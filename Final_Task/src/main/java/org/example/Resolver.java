@@ -26,14 +26,9 @@ public class Resolver {
             } else if (n instanceof Expression) {
                 resolve((Expression) n);
             } else {
-                System.out.println("Was Zum Kuckuck ist: " + node.toString());
+                System.out.println("Was Zum Kuckuck ist: " + n.toString());
                 throw new RuntimeException("kein Statement oder Expression");
             }
-        }
-
-        {
-            System.out.println("Was Zum Kuckuck ist: " + node.toString());
-            throw new RuntimeException("kein Statement oder Expression");
         }
     }
 
