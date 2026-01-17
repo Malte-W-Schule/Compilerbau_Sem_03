@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 public class Main {
     public static void main(String[] args) {
 
-        Path testsdir = Paths.get("src/test/pos");
+        Path testsdir = Paths.get("src/test/pos/");
 
         // Der Rest bleibt identisch...
         if (!Files.exists(testsdir) || !Files.isDirectory(testsdir)) {
@@ -28,8 +28,8 @@ public class Main {
         }
         int i = 1;
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(testsdir)) {
-/*//
-            Path entry = Path.of("src/test/pos/test11_while.txt");
+/// *
+            Path entry = Path.of("src/test/postemp/test23_inheritance.txt");
             try {
                 String fileContent = Files.readString(entry);
                 run(fileContent,i);
@@ -37,9 +37,9 @@ public class Main {
             } catch (Exception e) {
                 System.err.println("Fehler: " + e.getMessage());
                 throw e;
-            } *///
-///*
-            for (Path entry : stream) {
+            }//*/
+/*//
+            /*for (Path entry : stream) {
                 if (Files.isRegularFile(entry)) {
                     System.out.println("\n--------------------------------------------------");
                     System.out.println("Verarbeite Datei: " + entry.getFileName());

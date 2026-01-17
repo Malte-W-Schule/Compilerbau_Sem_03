@@ -202,10 +202,19 @@ public class Resolver {
         for (Expression e : paramCall.params()) {
             passedParamtypes.add(resolve(e));
         }
-
+        if(fDecl.getConnectedNode() instanceof ConDeclNode){
+            visitConDecl((ConDeclNode) fDecl.getConnectedNode());
+            return new VoidType();
+        }
+        if(fDecl.getConnectedNode() instanceof CDeclNode){
+            visitCDecl((CDeclNode) fDecl.getConnectedNode());
+            return new VoidType();
+        }
         //Scope zu Funktionsaufruf ändern, um Zugriff auf die deklarierten Parameter zu ermöglichen
         Scope fBlockScope = fDecl.getScope();
         this.currentScope = fBlockScope;
+
+
 
         FDeclNode fDeclNode = (FDeclNode) fDecl.getConnectedNode();
 
