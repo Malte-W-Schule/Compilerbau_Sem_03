@@ -185,7 +185,7 @@ public class Interpreter {
         env.assign(assiNode.id().name(), evaluateExpression(assiNode.value(), env));
         return null;
     }
-    
+
     // === Expression ===
     private int visitIntegerNode(IntegerNode integerNode) {
         return integerNode.value();
