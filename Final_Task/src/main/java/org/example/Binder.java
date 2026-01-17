@@ -17,12 +17,14 @@ public class Binder {
         // Globaler Scope (Eltern-Scope ist null)
         //todo was diese Native Funktion?
         currentScope = new Scope(null);
-        Symbol native_print_int = new Symbol("print_int", new VoidType(), new FDeclNode(false, new VoidType(), false, new IDNode("print_int"), new ParamNodeDecl(List.of()), new FBlockNode(new ReturnNode(null), List.of())), this.currentScope, false);
+        SingleParamNode intPara = new SingleParamNode(new IntType(), false, new IDNode(""));
+        ParamNodeDecl intParams = new ParamNodeDecl(List.of(intPara));
+
+
+        //Eingebaute Funktionen (Runtime/Standardbibliothek): print_bool, print_int, print_char, print_string (Ausgabe eines Werts des jeweiligen Typs)
+        Symbol native_print_int = new Symbol("print_int", new VoidType(), new FDeclNode(false, new VoidType(), false, new IDNode("print_int"), intParams, new FBlockNode(new ReturnNode(null), List.of())), this.currentScope, false);
         this.currentScope.bind(native_print_int);
-      /*  Symbol native_print_bool = new Symbol("print_bool", new VoidType(),
-                new FDeclNode(false, new VoidType(), false, new IDNode("print_bool"),
-                        new ParamNodeDecl(List.of(), this.currentScope, false)));
-        this.currentScope.bind(native_print_bool);*/
+
     }
 
     public void visitProgram(ProgramNode node) {

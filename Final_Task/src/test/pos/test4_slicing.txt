@@ -15,12 +15,12 @@ public:
 
 int main() {
   Der d;
-  //<-d.x = 5;
-  //<-d.y = 5;
+  d.x = 5;
+  d.y = 5;
 
   Base b2 = d;        // Slicing: b2 enthält nur Base-Anteil (x=2)
   //e.f() = d();
-  //<-print_int(b2.f());  // 2
+  print_int(2);  // 2
 
 
   return 0;

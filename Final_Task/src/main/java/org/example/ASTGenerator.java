@@ -18,7 +18,12 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
         String name = ctx.ID(0).toString();
         IDNode id = new IDNode(name);
         IDNode inherit = null;
-        Type t = (Type) visit(ctx.CLASS());
+        //KlassenType wird nicht geholt, da in Grammatik CLASS statt Type steht-> keine Verbinung zu Type
+        //Type t = (Type) visit(ctx.CLASS());
+        //Dreckige Lösung evtl Fehlerquelle
+
+        KlassenType t = new KlassenType(name);
+
         boolean isInherit = false;
         if(ctx.ID().size()>1) {
 
