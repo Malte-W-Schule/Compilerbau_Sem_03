@@ -11,20 +11,12 @@ public class Binder {
     public Map<ASTNode, Scope> getNodeScope() {
         return nodeScope;
     }
-    //print_bool, print_int, print_char, print_string
 
     public Binder() {
         // Globaler Scope (Eltern-Scope ist null)
-        //todo was diese Native Funktion?
         currentScope = new Scope(null);
-        SingleParamNode intPara = new SingleParamNode(new IntType(), false, new IDNode(""));
-        ParamNodeDecl intParams = new ParamNodeDecl(List.of(intPara));
 
-
-        //Eingebaute Funktionen (Runtime/Standardbibliothek): print_bool, print_int, print_char, print_string (Ausgabe eines Werts des jeweiligen Typs)
-        Symbol native_print_int = new Symbol("print_int", new VoidType(), new FDeclNode(false, new VoidType(), false, new IDNode("print_int"), intParams, new FBlockNode(new ReturnNode(null), List.of())), this.currentScope, false);
-        this.currentScope.bind(native_print_int);
-
+        initNativeFunctions();
     }
 
     public void visitProgram(ProgramNode node) {
@@ -42,7 +34,6 @@ public class Binder {
 
     // Statements geben keinen Typ zurück (void)
     private void visitStmt(Statement statement) {
-
         switch (statement) {
             case InitNode i -> visitInit(i); //
             case DeclNode d -> visitDecl(d); //
@@ -77,7 +68,8 @@ public class Binder {
             case ArithmetischeExpressionNode e -> visitArithmetischeExpressionNode(e);
 
             default -> throw new IllegalStateException("Unexpected value: " + expression);
-        };
+        }
+        ;
     }
 
     // === Expression ===
@@ -93,11 +85,11 @@ public class Binder {
     }
 
     private void visitLogischeExpressionNode(LogischeExpressionNode l) {
-        nodeScope.put(l,currentScope);
+        nodeScope.put(l, currentScope);
     }
 
     private void visitArithmetischeExpressionNode(ArithmetischeExpressionNode a) {
-        nodeScope.put(a,currentScope);
+        nodeScope.put(a, currentScope);
     }
 
     // =============== visit methods Statements with bind ==============================
@@ -258,6 +250,54 @@ public class Binder {
 
     // ========================================
 
+    //print_bool, print_int, print_char, print_string
+    private void initNativeFunctions() {
 
+        //Eingebaute Funktionen (Runtime/Standardbibliothek): print_bool, print_int, print_char, print_string (Ausgabe eines Werts des jeweiligen Typs)
+
+        // == Print Int ==
+        SingleParamNode intPara = new SingleParamNode(new IntType(), false, new IDNode(""));
+        ParamNodeDecl intParams = new ParamNodeDecl(List.of(intPara));
+        IDNode print_int = new IDNode("print_int");
+
+        FBlockNode fblockInt = new FBlockNode(new ReturnNode(null), List.of());
+        FDeclNode fDeclInt = new FDeclNode(false, new VoidType(), false, print_int, intParams, fblockInt);
+
+        Symbol native_print_int = new Symbol("print_int", new VoidType(), fDeclInt, this.currentScope, false);
+        this.currentScope.bind(native_print_int);
+
+        // == Print Bool ==
+        SingleParamNode boolPara = new SingleParamNode(new BoolType(), false, new IDNode(""));
+        ParamNodeDecl boolParams = new ParamNodeDecl(List.of(boolPara));
+        IDNode print_bool = new IDNode("print_bool");
+
+        FBlockNode fBlockBool = new FBlockNode(new ReturnNode(null), List.of());
+        FDeclNode fDeclBool = new FDeclNode(false, new VoidType(), false, print_bool, boolParams, fBlockBool);
+
+        Symbol native_print_bool = new Symbol("print_bool", new VoidType(), fDeclBool, this.currentScope, false);
+        this.currentScope.bind(native_print_bool);
+
+        // == Print Char ==
+        SingleParamNode charPara = new SingleParamNode(new CharType(), false, new IDNode(""));
+        ParamNodeDecl charParams = new ParamNodeDecl(List.of(charPara));
+        IDNode print_char = new IDNode("print_char");
+
+        FBlockNode fblockChar = new FBlockNode(new ReturnNode(null), List.of());
+        FDeclNode fDeclNodeChar = new FDeclNode(false, new VoidType(), false, print_char, charParams, fblockChar);
+
+        Symbol native_print_char = new Symbol("print_char", new VoidType(), fDeclNodeChar, this.currentScope, false);
+        this.currentScope.bind(native_print_char);
+
+        // == Print String ==
+        SingleParamNode strPara = new SingleParamNode(new StringType(), false, new IDNode(""));
+        ParamNodeDecl strParams = new ParamNodeDecl(List.of(strPara));
+        IDNode print_str = new IDNode("print_str");
+
+        FBlockNode fblockStr = new FBlockNode(new ReturnNode(null), List.of());
+        FDeclNode fDeclNodeStr = new FDeclNode(false, new VoidType(), false, print_str, strParams, fblockStr);
+
+        Symbol native_print_str = new Symbol("print_str", new VoidType(), fDeclNodeStr, this.currentScope, false);
+        this.currentScope.bind(native_print_str);
+    }
 
 }

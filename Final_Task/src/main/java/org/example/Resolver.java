@@ -123,7 +123,7 @@ public class Resolver {
     //d.x=5;
     private void visitAssi(AssiNode assiNode) {//record AssiNode(IDNode id, Expression value) implements Statement, ASTNode{}
         Symbol lhs;
-        if (assiNode.objectId()!= null && assiNode.objectId().name()!= null) {
+        if (assiNode.objectId() != null && assiNode.objectId().name() != null) {
             // ist d definiert
             Scope temp = this.currentScope;
             currentScope.resolve(assiNode.objectId().name());
@@ -159,32 +159,32 @@ public class Resolver {
     }
 
     //prüft Anzahl und Typen
-    private void checkParameter(ParamNodeDecl paramDecl, ParamCallNode paramCall) {
-        if (paramDecl.params().size() != paramCall.params().size()) {
+    private void checkParameter(ParamNodeDecl paramDecl, ArrayList<Type> types) {
+        if (paramDecl.params().size() != types.size()) {
             throw new RuntimeException("Anzahl Parameter bei Übergabe stimmt nicht mit deklarierten überein");
         }
 
-        for (int i = 0; i < paramCall.params().size(); i++) {
+        for (int i = 0; i < types.size(); i++) {
             Type typeDecl = paramDecl.params().get(i).type();
-            Type typeCall = resolve(paramCall.params().get(i));
-            if (typeDecl.getClass() != typeCall.getClass()) {
+            Type typeCall = types.get(i);
+            if (!typeDecl.equals(typeCall)) {
                 throw new RuntimeException("Typen der Paramter stimmen nicht überein");
             }
         }
     }
 
     private Type checkReturn(FBlockNode fBlock, Symbol fSymbol) {
-        Type retType = resolve(fBlock.ret().value());
-        if (retType == null) {
-            System.out.println("return type null in: " + fBlock.toString());
-        }
-
-        if (retType instanceof VoidType) {
-            Type func = fSymbol.getType();
-            if (func.equals(retType)) {
-                throw new RuntimeException("Typen der Funktion und des Rückgabewertes stimmen nicht überein");
+        Type retType = null;
+        if (fBlock.ret().value() != null) {
+            retType = resolve(fBlock.ret().value());
+            if (!(retType instanceof VoidType)) {
+                Type func = fSymbol.getType();
+                if (!func.equals(retType)) {
+                    throw new RuntimeException("Typen der Funktion und des Rückgabewertes stimmen nicht überein");
+                }
             }
         }
+
         return retType;
     }
 
@@ -195,22 +195,33 @@ public class Resolver {
     private Type visitFCall(FCallNode f) {
         Scope tempScope = this.currentScope;
         Symbol fDecl = currentScope.resolve(f.id().name());
+
+        //Hier erst übergebene Parameter im aktuellen Scope prüfen
+        ParamCallNode paramCall = f.params();
+        ArrayList<Type> passedParamtypes = new ArrayList<>();
+        for (Expression e : paramCall.params()) {
+            passedParamtypes.add(resolve(e));
+        }
+
+        //Scope zu Funktionsaufruf ändern, um Zugriff auf die deklarierten Parameter zu ermöglichen
         Scope fBlockScope = fDecl.getScope();
         this.currentScope = fBlockScope;
 
         FDeclNode fDeclNode = (FDeclNode) fDecl.getConnectedNode();
 
-        ParamNodeDecl paramDecl = (ParamNodeDecl) fDeclNode.params();
-        ParamCallNode paramCall = f.params();
-        //prüft Anzahl und Typen der Parameter
-        checkParameter(paramDecl, paramCall);
+        ParamNodeDecl paramDecl = fDeclNode.params();
 
-        //return typ vergleichen, wenn einer existiert, der return steht im Block
+        //prüft Anzahl und Typen der Parameter
+        checkParameter(paramDecl, passedParamtypes);
+
+        //return typ der aufgerufenen Funktion vergleichen, wenn einer existiert
         FBlockNode fBlock = (FBlockNode) fDeclNode.block();
+
+        Type returnF = checkReturn(fBlock, fDecl);
 
         this.currentScope = tempScope;
 
-        return checkReturn(fBlock, fDecl);
+        return returnF;
     }
 
 
@@ -218,15 +229,22 @@ public class Resolver {
 
         Scope tempScope = this.currentScope;
         Symbol cDecl = currentScope.resolve(c.name().name());
+
+        //Hier erst übergebene Parameter im aktuellen Scope prüfen
+        ParamCallNode paramCall = c.params();
+        ArrayList<Type> passedParamtypes = new ArrayList<>();
+        for (Expression e : paramCall.params()) {
+            passedParamtypes.add(resolve(e));
+        }
+
         Scope cBlockScope = cDecl.getScope();
         this.currentScope = cBlockScope;
 
         ConDeclNode cDeclNode = (ConDeclNode) cDecl.getConnectedNode();
-
         ParamNodeDecl paramDecl = (ParamNodeDecl) cDeclNode.params();
-        ParamCallNode paramCall = c.params();
+        //ParamCallNode paramCall = c.params();
         //prüft Anzahl und Typen der Parameter
-        checkParameter(paramDecl, paramCall);
+        checkParameter(paramDecl, passedParamtypes);
 
         this.currentScope = tempScope;
     }
@@ -243,6 +261,11 @@ public class Resolver {
 
     private Type visitMCall(MCall m) {
 
+        ParamCallNode paramCall = m.params();
+        ArrayList<Type> passedParamtypes = new ArrayList<>();
+        for (Expression e : paramCall.params()) {
+            passedParamtypes.add(resolve(e));
+        }
         Symbol classSymbol = currentScope.resolve(m.clars().name()); // todo ist clars cdeclnode?
         this.currentScope = classSymbol.getScope();
 
@@ -254,10 +277,10 @@ public class Resolver {
 
         // params nodes getten für decl und call
         ParamNodeDecl paramNodeDecl = fDeclNode.params();
-        ParamCallNode paramCallNode = m.params();
+        //ParamCallNode paramCallNode = m.params();
 
         // params vergleichen
-        checkParameter(paramNodeDecl, paramCallNode);
+        checkParameter(paramNodeDecl, passedParamtypes);
 
         FBlockNode fBlock = (FBlockNode) fDeclNode.block();
 

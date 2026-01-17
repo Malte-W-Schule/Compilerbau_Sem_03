@@ -2,10 +2,12 @@
 
 int add(int a, int b) { return a + b; }
 
+
 int main() {
   int x = 5;
   int y = 7;
-  //<-print_int(add(x, y));      // 12
+  //add(x, y) //->
+  print_int(add(x, y));      // 12
 
   bool b = x * 2 < y;        // 10 < 7 -> false
   //<-print_bool(b);             // false

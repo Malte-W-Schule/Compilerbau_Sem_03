@@ -28,8 +28,8 @@ public class Main {
         }
         int i = 1;
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(testsdir)) {
-
-            Path entry = Path.of("src/test/pos/test4_slicing.txt");
+/*//
+            Path entry = Path.of("src/test/pos/test11_while.txt");
             try {
                 String fileContent = Files.readString(entry);
                 run(fileContent,i);
@@ -37,8 +37,8 @@ public class Main {
             } catch (Exception e) {
                 System.err.println("Fehler: " + e.getMessage());
                 throw e;
-            }
-/*
+            } *///
+///*
             for (Path entry : stream) {
                 if (Files.isRegularFile(entry)) {
                     System.out.println("\n--------------------------------------------------");
@@ -52,7 +52,7 @@ public class Main {
                         System.err.println("Fehler: " + e.getMessage());
                     }
                 }
-            }*/
+            }//*/
         } catch (IOException e) {
             e.printStackTrace();
         }
