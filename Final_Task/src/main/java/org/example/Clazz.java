@@ -32,6 +32,10 @@ public class Clazz extends Scope{
         if enclosingScope: return enclosingScope.resolve(name)
         verschachtelte Klasse machen wir erstmal nicht
          */
+        if(getParent() != null)
+        {
+            return getParent().resolve(name);
+        }
         return null;
     }
 

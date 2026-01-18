@@ -1,9 +1,8 @@
 package org.example;
 
-import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.example.antlr.CplusplusLexer;
 import org.antlr.v4.runtime.*;
+import org.example.antlr.CplusplusLexer;
 import org.example.antlr.CplusplusParser;
 
 import java.io.IOException;
@@ -11,14 +10,13 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.stream.Stream;
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
     public static void main(String[] args) {
 
-        Path testsdir = Paths.get("src/test/pos");
+        Path testsdir = Paths.get("src/test/postemp");
 
         // Der Rest bleibt identisch...
         if (!Files.exists(testsdir) || !Files.isDirectory(testsdir)) {
@@ -28,8 +26,8 @@ public class Main {
         }
         int i = 1;
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(testsdir)) {
-/*//
-            Path entry = Path.of("src/test/pos/test11_while.txt");
+
+            Path entry = Path.of("src/test/postemp/test6_construcors.txt");
             try {
                 String fileContent = Files.readString(entry);
                 run(fileContent,i);
@@ -37,9 +35,9 @@ public class Main {
             } catch (Exception e) {
                 System.err.println("Fehler: " + e.getMessage());
                 throw e;
-            } *///
+            }
 ///*
-            for (Path entry : stream) {
+          /* for (Path entry : stream) {
                 if (Files.isRegularFile(entry)) {
                     System.out.println("\n--------------------------------------------------");
                     System.out.println("Verarbeite Datei: " + entry.getFileName());
@@ -77,7 +75,7 @@ public class Main {
         System.out.println("AST:");
         ASTGenerator generator = new ASTGenerator();
         ASTNode meinEigenerAST = generator.visit(tree);
-        ASTGenerator.print(meinEigenerAST);
+        //ASTGenerator.print(meinEigenerAST);
 
         System.out.println("Binder:");
         Binder binder = new Binder();

@@ -33,6 +33,7 @@ expr:
       | f_call
       | m_call
       | constructor_call
+      | f_call_no_semi
       ;
 
 arithmExpr: // log op
@@ -63,8 +64,9 @@ logExpr: //plus mal minus -> ari
 //Parameterloser Konstruktor und weitere Konstruktoren (jeweils ohne Initialisierungslisten), Verwendung nur als T x; (ruft T() auf) oder T x = T(args); (kein direkter Aufruf T x(args);!)
 // Point p;
 // p = Point(3, 4)
-constructor_call: type ID ';'
-                | ID parameter_call';';
+
+
+constructor_call: ID parameter_call';';
 // T x; (ruft T()
 constructor_decl: ID parameter_decl f_block;
 
@@ -77,7 +79,9 @@ f_decl: VIRTUAL? type AND? ID parameter_decl (f_block|';');
 f_block: CLBRACK stmt* return? CRBRACK;
 
 // === Function Call ===
-f_call: ID parameter_call ';'?;
+f_call: f_call_no_semi ';';
+f_call_no_semi : ID parameter_call;
+
 // === Parameter ===
 parameter_decl:  LBRACK ( parameter (',' parameter)* )? RBRACK;
 parameter : type AND? ID;

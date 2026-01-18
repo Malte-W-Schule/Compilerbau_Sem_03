@@ -69,7 +69,7 @@ record CDeclNode(KlassenType type, IDNode name, IDNode inherit, boolean isInheri
 // Point(int a, int b) { x = a; y = b; }
 record ConDeclNode(IDNode name, ParamNodeDecl params, Block block) implements ASTNode,Statement{};
 //Default: Point p; Parametrisiert: Point p = Point(3, 4);
-record ConCallNode(KlassenType type, IDNode name, ParamCallNode params) implements ASTNode,Statement, Expression{}
+record ConCallNode(IDNode name, ParamCallNode params) implements ASTNode,Statement, Expression{}
 
 // === Method Call from class ===
 record MCall(IDNode clars, IDNode fName,ParamCallNode params) implements ASTNode, Statement, Expression{}

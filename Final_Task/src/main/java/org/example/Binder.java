@@ -138,10 +138,6 @@ public class Binder {
     //momentan kann eine Klasse die eine Vererbung hat, nicht als Superklasse genutzt werden
     private void visitCDecl(CDeclNode c) {
 
-        //Klassenname an globalen Scope binden
-        //Symbol clas = new Symbol(c.name().name(), c.name(), c, currentScope, false);
-        //currentScope.bind(clas);
-        //todo
         if (c.isInherit()) {
             Symbol superClazzSymbol = currentScope.resolve(c.inherit().name());
             Clazz clazzScope = (Clazz) superClazzSymbol.getScope();
@@ -241,7 +237,7 @@ public class Binder {
     }
 
     private void visitFCall(FCallNode f) {
-        return;
+
     }
 
     private void visitMCallStmt(MCall m) {

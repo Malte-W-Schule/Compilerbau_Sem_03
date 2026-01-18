@@ -50,7 +50,7 @@ public class Resolver {
             case CDeclNode c -> visitCDecl(c);
             case ConDeclNode c -> visitConDecl(c);
             case ConCallNode c -> visitConCall(c);
-            //case MCall m -> visitMCallStmt(m);
+            case MCall m -> visitMCallStmt(m);
             case Block b -> visitBlock(b);
             default ->
                     throw new IllegalArgumentException("Unbekannter Knotentyp: " + statement.getClass().getSimpleName());
@@ -85,9 +85,10 @@ public class Resolver {
 
     //================== Deklarationen ============================
     public void visitConDecl(ConDeclNode c) {
+        Scope oldScope = this.currentScope;
         this.currentScope = nodeScope.get(c);
         resolve(c.block());
-        this.currentScope = currentScope.getParent();
+        this.currentScope = oldScope;
     }
 
     private void visitDecl(DeclNode declNode) {
@@ -101,9 +102,10 @@ public class Resolver {
     }
 
     public void visitCDecl(CDeclNode c) {
+        Scope oldScope = this.currentScope;
         this.currentScope = nodeScope.get(c);
         resolve(c.block());
-        this.currentScope = currentScope.getParent();
+        this.currentScope = oldScope;
     }
 
     private void visitCDeclHelper(CDeclNode c) {
@@ -175,7 +177,7 @@ public class Resolver {
 
     private Type checkReturn(FBlockNode fBlock, Symbol fSymbol) {
         Type retType = null;
-        if (fBlock.ret().value() != null) {
+        if (fBlock.ret() != null && fBlock.ret().value() != null) {
             retType = resolve(fBlock.ret().value());
             if (!(retType instanceof VoidType)) {
                 Type func = fSymbol.getType();
@@ -202,6 +204,16 @@ public class Resolver {
         for (Expression e : paramCall.params()) {
             passedParamtypes.add(resolve(e));
         }
+
+        if(fDecl.getConnectedNode() instanceof ConDeclNode){
+            visitConDecl((ConDeclNode) fDecl.getConnectedNode());
+            return new VoidType();
+        }
+        if(fDecl.getConnectedNode() instanceof CDeclNode){
+            visitCDecl((CDeclNode) fDecl.getConnectedNode());
+            return new VoidType();
+        }
+        //Prüfe ob call ein Constructor ist
 
         //Scope zu Funktionsaufruf ändern, um Zugriff auf die deklarierten Parameter zu ermöglichen
         Scope fBlockScope = fDecl.getScope();
@@ -248,7 +260,7 @@ public class Resolver {
 
         this.currentScope = tempScope;
     }
-    /*
+
     private void visitMCallStmt(MCall m) {//todo inherit scope
         //Klasse ist im globalen Scope, sollte so gehen
         currentScope.resolve(m.clars().name());
@@ -257,17 +269,24 @@ public class Resolver {
         for (Expression e : m.params().params()) {
             resolve(e);
         }
-    }*/
+    }
 
     private Type visitMCall(MCall m) {
 
+        Scope temp = this.currentScope;
         ParamCallNode paramCall = m.params();
         ArrayList<Type> passedParamtypes = new ArrayList<>();
         for (Expression e : paramCall.params()) {
             passedParamtypes.add(resolve(e));
         }
-        Symbol classSymbol = currentScope.resolve(m.clars().name()); // todo ist clars cdeclnode?
-        this.currentScope = classSymbol.getScope();
+        //clars irreführend; wir bekommen das Symbol des definierten Objekts, zB Der d; d.x=4; Symbol==d
+        Symbol object = currentScope.resolve(m.clars().name());
+        //hole das Klassensymbol über den Typ des Objekts
+        KlassenType kl = (KlassenType) object.getType();
+        String klassenname = kl.name();
+
+        Symbol klassenSymbol = currentScope.resolve(klassenname);
+        this.currentScope = klassenSymbol.getScope();
 
         // Symbol von function getten um paras über fdecl node zu holen
         Symbol fSymbol = currentScope.resolve(m.fName().name());
@@ -283,10 +302,10 @@ public class Resolver {
         checkParameter(paramNodeDecl, passedParamtypes);
 
         FBlockNode fBlock = (FBlockNode) fDeclNode.block();
+        Type t = checkReturn(fBlock, fSymbol);
+        this.currentScope = temp;
 
-        this.currentScope = currentScope.getParent();
-
-        return checkReturn(fBlock, fSymbol);
+        return t;
     }
 
 

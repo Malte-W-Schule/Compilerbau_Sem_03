@@ -1,21 +1,22 @@
 package org.example;
 
-import org.antlr.v4.runtime.tree.ParseTree;
 import org.example.antlr.CplusplusBaseVisitor;
 import org.example.antlr.CplusplusParser;
 
-import javax.naming.Context;
 import java.lang.reflect.Field;
-import java.net.IDN;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
 
+    //Brauchen wir, um Konstruktoren zu finden.
+    ArrayList<String> klassennamen = new ArrayList();
+
     @Override
     public ASTNode visitClass_decl(CplusplusParser.Class_declContext ctx){
         String name = ctx.ID(0).toString();
+        klassennamen.add(name);
         IDNode id = new IDNode(name);
         IDNode inherit = null;
         //KlassenType wird nicht geholt, da in Grammatik CLASS statt Type steht-> keine Verbinung zu Type
@@ -69,7 +70,7 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitProgram(CplusplusParser.ProgramContext ctx) {
-        System.out.println("Ist in Programm gegangen");
+
         List<Statement> statements = new ArrayList<>();
 
         // Alle Statements im Programm durchgehen
@@ -80,7 +81,7 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
                 // System.out.println(stmt); // todo remove (Auskommentiert für sauberen Pretty Print)
             }
         }
-        System.out.println("kurz vor zurückgeben");
+
         return new ProgramNode(statements);
     }
 
@@ -94,17 +95,17 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitConstructor_call(CplusplusParser.Constructor_callContext ctx) {
-        KlassenType type = (KlassenType) visit(ctx.type());
+        //KlassenType type = (KlassenType) visit(ctx.type());
         IDNode id = new IDNode(ctx.ID().getText());
         ParamCallNode params = (ParamCallNode) visit(ctx.parameter_call());
-        return new ConCallNode(type, id, params);
+        return new ConCallNode( id, params);
     }
 
     @Override
     public ASTNode visitConstructor_decl(CplusplusParser.Constructor_declContext ctx) {
         String name = ctx.ID().getText();
         IDNode id = new IDNode(name);
-        BlockNode block = (BlockNode) visit(ctx.f_block());
+        FBlockNode block = (FBlockNode) visit(ctx.f_block());
         ParamNodeDecl params = ((ParamNodeDecl) visit(ctx.parameter_decl()));
         return new ConDeclNode(id, params, block);
     }
@@ -149,11 +150,29 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
     }
 
     @Override
-    public ASTNode visitF_call(CplusplusParser.F_callContext ctx) {
+    public ASTNode visitF_call_no_semi(CplusplusParser.F_call_no_semiContext ctx) {
+
         String name = ctx.ID().getText();
+
+        /*boolean istFunktionsnameEinKlassenname = false;
+        for(int i = 0; i < klassennamen.size(); i++){
+            if(klassennamen.get(i).equals(name)){
+                istFunktionsnameEinKlassenname = true;
+                break;
+            }
+        }
+        if(istFunktionsnameEinKlassenname){
+            return visitConstructor_decl(ctx);
+        }*/
+
         IDNode id = new IDNode(name);
         ParamCallNode params = (ParamCallNode) visit(ctx.parameter_call());
         return new FCallNode(id, params);
+    }
+
+    @Override
+    public ASTNode visitF_call(CplusplusParser.F_callContext ctx) {
+        return visitF_call_no_semi(ctx.f_call_no_semi());
     }
 
     @Override
