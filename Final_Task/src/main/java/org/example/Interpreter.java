@@ -188,22 +188,18 @@ public class Interpreter {
             paramTypen.add(fDeclNode.params().params().get(i).type());
         }
 
-        //prüfe, ob es die Funktion schon gibt in Map: parameterKombis
-        /*if (isKeyInMapParameterKombis(name)) {
-            //wenn ja: füge die Parameter Kombi der Map parameterKombis hinzu
-                env.
-        }*/
-
-        //wenn nein: erstelle neue Liste mit Kombi der aktuellen Parameter
-        //füge Liste mit Schlüssel der Map hinzu
-
+        //gehe die Parameter Liste durch. Hänge ja nach typ eine Bezeichnung an den Namen der Funktion->mache so Kombi aus Funktion und Params einzigartig
+        if(paramTypen.size()!=0) {
+            for (int i = 0; i < paramTypen.size(); i++) {
+                name = name + "_" + paramTypen.get(i).toString();
+            }
+        }
 
         Fun fn = new Fun(fDeclNode, env);
-        env.define(fDeclNode.id().name(), fn);
-        FunEnvironment fe = new FunEnvironment(fDeclNode.id().name(), fDeclNode.params(), fn);
-        env.define(fe, fDeclNode.block());
+        env.define(name, fn);
         return null;
     }
+
 
     private static Object evalAssiNode(AssiNode assiNode, Environment env) {
         env.assign(assiNode.id().name(), evaluateExpression(assiNode.value(), env));

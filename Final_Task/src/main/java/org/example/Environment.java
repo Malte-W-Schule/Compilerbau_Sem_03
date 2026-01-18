@@ -9,18 +9,9 @@ public class Environment {
     private Map<String, Object> values = new HashMap<>();
 
     //private Map< String, Map<ArrayList<Type> paramTypes, Block b>> functions = new HashMap<>();
-    private Map<String, List<List<Type>>> parameterKombis = new HashMap<>();
+    //private Map<String, List<List<Type>>> parameterKombis = new HashMap<>();
 
-    public boolean isKeyInMapParameterKombis(String name){
-        if (parameterKombis.containsKey(name)) {
-            return true;
-        }
-        return false;
-    }
 
-    public void defineParaMap(String name, List<List<Type>> paramTypes){
-
-    }
 
     private Map< FunEnvironment, Block> functions = new HashMap<>();
 

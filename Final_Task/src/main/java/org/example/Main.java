@@ -22,15 +22,15 @@ public class Main {
 
 
         // Der Rest bleibt identisch...
-        if (!Files.exists(testsdir) || !Files.isDirectory(testsdir)) {
+       /* if (!Files.exists(testsdir) || !Files.isDirectory(testsdir)) {
             System.err.println("Verzeichnis nicht gefunden: " + testsdir.toAbsolutePath());
             System.err.println("Bitte stelle sicher, dass der Ordner 'tests' im Projektverzeichnis liegt.");
             return;
-        }
+        }*/
         int i = 1;
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(testsdir)) {
 //
-            /*Path entry = Path.of("src/test/postemp/test6_construcors.txt");
+            Path entry = Path.of("src/test/pos/t.txt");
             try {
                 String fileContent = Files.readString(entry);
                 run(fileContent,i);
@@ -38,10 +38,10 @@ public class Main {
             } catch (Exception e) {
                 System.err.println("Fehler: " + e.getMessage());
                 throw e;
-            }*/
+            }
 ///*
 
-          for (Path entry : stream) {
+          /*for (Path entry : stream) {
 
                 if (Files.isRegularFile(entry)) {
                     System.out.println("\n--------------------------------------------------");
@@ -55,7 +55,7 @@ public class Main {
                         System.err.println("Fehler: " + e.getMessage());
                     }
                 }
-            }
+            }*/
         } catch (IOException e) {
             e.printStackTrace();
         }

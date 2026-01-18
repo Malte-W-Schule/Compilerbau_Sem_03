@@ -134,7 +134,6 @@ public class Binder {
         currentScope.bind(ids);
     }
 
-
     //momentan kann eine Klasse die eine Vererbung hat, nicht als Superklasse genutzt werden
     private void visitCDecl(CDeclNode c) {
 
