@@ -16,7 +16,10 @@ import java.nio.file.Paths;
 public class Main {
     public static void main(String[] args) {
 
-        Path testsdir = Paths.get("src/test/postemp");
+
+
+        Path testsdir = Paths.get("src/test/pos/");
+
 
         // Der Rest bleibt identisch...
         if (!Files.exists(testsdir) || !Files.isDirectory(testsdir)) {
