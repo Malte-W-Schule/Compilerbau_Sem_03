@@ -7,8 +7,43 @@ import java.util.Map;
 
 public class Environment {
     private Map<String, Object> values = new HashMap<>();
-    private Environment parent; // Für spätere Scopes (optional für den Anfang)
 
+    //private Map< String, Map<ArrayList<Type> paramTypes, Block b>> functions = new HashMap<>();
+    private Map<String, List<List<Type>>> parameterKombis = new HashMap<>();
+
+    public boolean isKeyInMapParameterKombis(String name){
+        if (parameterKombis.containsKey(name)) {
+            return true;
+        }
+        return false;
+    }
+
+    public void defineParaMap(String name, List<List<Type>> paramTypes){
+
+    }
+
+    private Map< FunEnvironment, Block> functions = new HashMap<>();
+
+    public void define(FunEnvironment name, Block value) {
+        if(functions.containsKey(name))
+        {
+            System.out.println("Duplicate name " + name);
+        }
+        else
+        {
+            functions.put(name,value);
+        }
+    }
+
+    public Block get(FunEnvironment name)
+    {
+        return functions.get(name);
+    }
+
+    private Environment parent; // Für spätere Scopes (optional für den Anfang)
+//f(x)
+//f(x,x)
+    //(f(x,x) f(int i) f(int y)
     public Environment(Environment parent) {
         this.parent = parent;
         if (parent == null) {
@@ -52,7 +87,6 @@ public class Environment {
 
     private void defineNativeFunctions() {
     }
-
 
     private double toDouble(Object obj) {
         if (obj instanceof Number) {

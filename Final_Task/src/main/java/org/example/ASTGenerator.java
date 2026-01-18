@@ -259,7 +259,7 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
     public ASTNode visitAtom(CplusplusParser.AtomContext ctx) {
         if (ctx.INT() != null) {
             String content = ctx.INT().getText();
-            String sign = null;
+            String sign = "+";
             if (ctx.SIGN() != null) {
                 sign = ctx.SIGN().getText();
             }

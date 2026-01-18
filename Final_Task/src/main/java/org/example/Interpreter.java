@@ -5,11 +5,11 @@ import java.util.List;
 
 public class Interpreter {
 
-
     //visit
     public static void interpret(ProgramNode node, Environment env) {
 
         for (ASTNode n : node.statements()) {
+            System.out.println(n+":");
             evaluateProgramNode(n, env);
         }
     }
@@ -26,73 +26,72 @@ public class Interpreter {
 
     //todo return a value?
     private static Object evaluateStatement(Statement statementNode, Environment env) {
-         return switch (statementNode) {
+        return switch (statementNode) {
             // === Variable Declarations & Assignments ===
             case DeclNode decl -> {
-                yield visitDeclNode(decl,env);
+                yield evalDeclNode(decl, env);
                 // Deklaration: int x;
             }
             case InitNode init -> {
-                yield visitInitNode(init, env);
+                yield evalInitNode(init, env);
                 // Initialisierung: int x = 5;
             }
             case AssiNode assi -> {
-                yield visitAssiNode(assi, env);
+                yield evalAssiNode(assi, env);
                 // Zuweisung: x = 10;
+            }
+            case FCallNode func ->{
+                yield evalFuncCall(func, env);
             }
 
             // === Blocks (implementieren Block -> Statement) ===
             case BlockNode block -> {
-                yield visitBlockNode(block, env);
+                yield evalBlockNode(block, env);
                 // Normaler Block: { ... }
             }
             case FBlockNode fBlock -> {
-                yield visitFBlockNode( fBlock, env);
+                yield evalFBlockNode(fBlock, env);
                 // Funktions-Block (mit Return)
             }
             case CBlockNode cBlock -> {
-                yield visitcBlockNode(cBlock, env);
+                yield evalcBlockNode(cBlock, env);
                 // Klassen-Block / Constructor-Block
             }
 
             // === Control Flow ===
             case IfNode ifNode -> {
-                yield visitIfNode(ifNode, env);
+                yield evalIfNode(ifNode, env);
                 // If-Anweisung
             }
             case WhileNode whileNode -> {
-                yield visitWhileNode(whileNode,env);
+                yield evalWhileNode(whileNode, env);
                 // While-Schleife
             }
             case ReturnNode retNode -> {
-                yield visitReturnNode(retNode, env);
+                yield evalReturnNode(retNode, env);
                 // Return Statement
             }
 
             // === Functions ===
             case FDeclNode fDecl -> {
-                yield visitFDeclNode(fDecl, env);// Funktions-Deklaration
-            }
-            case FCallNode fCall -> {
-                yield visitFCallNode(fCall, env);
-                // Funktions-Aufruf (kann Statement sein: "doSomething();")
+                yield evalFDeclNode(fDecl, env);// Funktions-Deklaration
             }
 
             // === Classes & Objects ===
             case CDeclNode cDecl -> {
-                yield visitCDeclNode(cDecl, env);
+                yield evalCDeclNode(cDecl, env);
                 // Klassen-Deklaration
             }
             case ConDeclNode conDecl -> {
-                yield visitConDeclNode(conDecl, env);
+                yield evalConDeclNode(conDecl, env);
                 // Konstruktor-Deklaration
             }
             case ConCallNode conCall -> {
-                yield visitConCallNode(conCall, env);
+                yield evalConCallNode(conCall, env);
                 // Konstruktor-Aufruf
             }
             case MCall mCall -> {
-                yield visitMCallNode(mCall, env);
+                yield evalMCallNode(mCall, env);
                 // Methoden-Aufruf: obj.method();
             }
             default -> throw new IllegalStateException("Unexpected value: " + statementNode);
@@ -100,61 +99,66 @@ public class Interpreter {
     }
 
     //todo
-    private static Object visitMCallNode(MCall mCall, Environment env) {
+    private static Object evalMCallNode(MCall mCall, Environment env) {
         return null;
     }
 
-    private static Object visitConCallNode(ConCallNode conCall, Environment env) {
+    private static Object evalConCallNode(ConCallNode conCall, Environment env) {
         return null;
     }
 
-    private static Object visitConDeclNode(ConDeclNode conDecl, Environment env) {
+    private static Object evalConDeclNode(ConDeclNode conDecl, Environment env) {
         return null;
     }
 
-    private static Object visitCDeclNode(CDeclNode cDecl, Environment env) {
+    private static Object evalCDeclNode(CDeclNode cDecl, Environment env) {
         return null;
     }
-
-    private static Object visitFCallNode(FCallNode fCall, Environment env) {
-        return null;
-    }
-
-    private static Object visitWhileNode(WhileNode whileNode, Environment env) {
-        return null;
-    }
-
-    private static Object visitReturnNode(ReturnNode retNode, Environment env) {
-        return evaluateExpression(retNode.value(),env);
-    }
-
-
-    private static Object visitIfNode(IfNode ifNode, Environment env) {
-
-        if(evaluateExpression(ifNode.com(), env).equals(true))
+    
+    private static Object evalWhileNode(WhileNode whileNode, Environment env) {
+        while(evaluateExpression(whileNode.com(), env).equals(true))
         {
+            evaluateStatement(whileNode.block(), env);
+        }
+        return null;
+    }
+
+    private static Object evalReturnNode(ReturnNode retNode, Environment env) {
+        return evaluateExpression(retNode.value(), env);
+    }
+
+    // fertig
+
+    private static Object evalIfNode(IfNode ifNode, Environment env) {
+
+        if (evaluateExpression(ifNode.com(), env).equals(true)) {
             evaluateStatement(ifNode.thenBlock(), env);
 
-        }
-        else if(ifNode.elseBlock() != null){
+        } else if (ifNode.elseBlock() != null) {
             evaluateStatement(ifNode.elseBlock(), env);
         }
         return null;
     }
 
-    //todo
-    private static Object visitcBlockNode(CBlockNode cBlock, Environment env) {
-        return null;
-    }
-
-    private static Object visitFBlockNode(FBlockNode fBlock, Environment env) {
-        for (Statement s : fBlock.body()) {
+    private static Object evalcBlockNode(CBlockNode cBlock, Environment env) {
+        for (Statement s : cBlock.body()) {
             evaluateStatement(s, env);
         }
         return null;
     }
 
-    private static Object visitBlockNode(BlockNode block, Environment env) {
+    private static Object evalFBlockNode(FBlockNode fBlock, Environment env) {
+        System.out.println("--Fblock");
+        for (Statement s : fBlock.body()) {
+            evaluateStatement(s, env);
+        }
+        if (fBlock.ret() != null) {
+            evaluateExpression(fBlock.ret().value(), env);
+        }
+        return null;
+    }
+
+    private static Object evalBlockNode(BlockNode block, Environment env) {
         for (Statement s : block.body()) {
             evaluateStatement(s, env);
         }
@@ -162,34 +166,51 @@ public class Interpreter {
     }
 
     // return null?
-    private static Object visitInitNode(InitNode init, Environment env) {
+    private static Object evalInitNode(InitNode init, Environment env) {
         env.define(init.id().name(), evaluateExpression(init.value(), env));
         return null;
     }
 
     // === Statements ===
-    private static Object visitDeclNode(DeclNode declNode, Environment environment)
-    {
+    private static Object evalDeclNode(DeclNode declNode, Environment environment) {
         environment.define(declNode.id().name(), null);
         return null;
     }
 
-    private static Object visitFDeclNode(FDeclNode fDeclNode, Environment env) {
+    private static Object evalFDeclNode(FDeclNode fDeclNode, Environment env) {
+
+        //hole den Namen der Funktion
+        String name = fDeclNode.id().name();
+        //hole Parameter aus fDecl und löse sie zu einer Typen Liste auf
+        ArrayList<Type> paramTypen = new ArrayList<>();
+
+        for (int i = 0; i < fDeclNode.params().params().size(); i++) {
+            paramTypen.add(fDeclNode.params().params().get(i).type());
+        }
+
+        //prüfe, ob es die Funktion schon gibt in Map: parameterKombis
+        /*if (isKeyInMapParameterKombis(name)) {
+            //wenn ja: füge die Parameter Kombi der Map parameterKombis hinzu
+                env.
+        }*/
+
+        //wenn nein: erstelle neue Liste mit Kombi der aktuellen Parameter
+        //füge Liste mit Schlüssel der Map hinzu
+
+
         Fun fn = new Fun(fDeclNode, env);
         env.define(fDeclNode.id().name(), fn);
+        FunEnvironment fe = new FunEnvironment(fDeclNode.id().name(), fDeclNode.params(), fn);
+        env.define(fe, fDeclNode.block());
         return null;
     }
 
-    private static Object visitAssiNode(AssiNode assiNode, Environment env)
-    {
+    private static Object evalAssiNode(AssiNode assiNode, Environment env) {
         env.assign(assiNode.id().name(), evaluateExpression(assiNode.value(), env));
         return null;
     }
 
     // === Expression ===
-    private int visitIntegerNode(IntegerNode integerNode) {
-        return integerNode.value();
-    }
 
     private static Object evaluateExpression(Expression exprNode, Environment env) {
         return switch (exprNode) {
@@ -197,11 +218,12 @@ public class Interpreter {
             case BoolNode b -> b.value();
             case StringNode str -> str.value();
             case CharNode c -> c.value();
-            case IDNode id -> id.name(); // Hier holt er 'a' aus dem globalEnv
+            case IDNode id -> env.get(id.name()); // Hier holt er 'a' aus dem globalEnv
 
             case ArithmetischeExpressionNode math -> {
                 Object left = evaluateExpression(math.left(), env);
                 Object right = evaluateExpression(math.right(), env);
+                System.out.println(" Ergebnis: "+evalMath(left,math.operator(),right)); //todo entfernen
                 yield evalMath(left, math.operator(), right); // Helper-Methode (siehe unten)
             }
             case LogischeExpressionNode logic -> {
@@ -217,10 +239,8 @@ public class Interpreter {
         };
     }
 
-    private static Object evalFuncCall(FCallNode fCallNode, Environment env)
-    {
+    private static Object evalFuncCall(FCallNode fCallNode, Environment env) {
         Fun fn = (Fun) env.get(fCallNode.id().name());
-
         List<Object> args = new ArrayList<>();
         for (int i = 0; i < fCallNode.params().params().size(); i++) {
             args.add(evaluateExpression(fCallNode.params().params().get(i), env));
@@ -230,24 +250,29 @@ public class Interpreter {
         for (int i = 0; i < args.size(); i++) {
             env.define(fn.fDeclNode().params().params().get(i).id().name(), args.get(i));
         }
-        evaluateStatement(fn.fDeclNode().block(), env);
 
-        return null; //todo irgendetwas zurückgeben
+
+        return evaluateStatement(fn.fDeclNode().block(), env); //todo irgendetwas zurückgeben
     }
 
-    private static Object evalMethodCall(MCall mCallNode, Environment env)
-    {
+    private static Object evalMethodCall(MCall mCallNode, Environment env) {
+
+        //klasse
+        //von der klasse die funktion
+        //mit parametern aufrufen
+        Object obj = env.get(mCallNode.clars().name());
+
+
         return null;
     }
 
-    private static Object evalConstructorCall(ConCallNode conCallNode, Environment env)
-    {
+    private static Object evalConstructorCall(ConCallNode conCallNode, Environment env) {
         return null;
     }
-
 
     // Helper für Arithmetik
     private static Object evalMath(Object left, String op, Object right) {
+
         if (left instanceof Integer l && right instanceof Integer r) {
             return switch (op) {
                 case "+" -> l + r;

@@ -29,8 +29,8 @@ public class Main {
         }
         int i = 1;
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(testsdir)) {
-
-            Path entry = Path.of("src/test/postemp/test6_construcors.txt");
+//
+            /*Path entry = Path.of("src/test/postemp/test6_construcors.txt");
             try {
                 String fileContent = Files.readString(entry);
                 run(fileContent,i);
@@ -38,9 +38,11 @@ public class Main {
             } catch (Exception e) {
                 System.err.println("Fehler: " + e.getMessage());
                 throw e;
-            }
+            }*/
 ///*
-          /* for (Path entry : stream) {
+
+          for (Path entry : stream) {
+
                 if (Files.isRegularFile(entry)) {
                     System.out.println("\n--------------------------------------------------");
                     System.out.println("Verarbeite Datei: " + entry.getFileName());
@@ -53,7 +55,7 @@ public class Main {
                         System.err.println("Fehler: " + e.getMessage());
                     }
                 }
-            }//*/
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -87,6 +89,11 @@ public class Main {
         System.out.println("Resolver:");
         Resolver solver = new Resolver(binder);
         solver.resolve((ProgramNode) meinEigenerAST);
+
+        System.out.println("Interpreter:");
+        Interpreter interpreter = new Interpreter();
+        interpreter.interpret((ProgramNode) meinEigenerAST, new Environment(null));
+
 
         //System.out.println(tree.toStringTree(meinEigenerAST));
         //System.out.println(meinEigenerAST);

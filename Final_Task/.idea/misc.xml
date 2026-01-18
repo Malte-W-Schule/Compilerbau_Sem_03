@@ -6,7 +6,7 @@
         <PerGrammarGenerationSettings>
           <option name="fileName" value="$PROJECT_DIR$/src/main/java/org/example/antlr/Cplusplus.g4" />
           <option name="autoGen" value="true" />
-          <option name="outputDir" value="C:\Users\Sarah Kirchhof\Desktop\fgdh\Compilerbau_Sem_03\Final_Task\src\main\java\org\example" />
+          <option name="outputDir" value="C:\Users\Malte\Documents\GitHub\Compilerbau_Sem_03\Final_Task\target\generated-sources" />
           <option name="libDir" value="" />
           <option name="encoding" value="" />
           <option name="pkg" value="" />
