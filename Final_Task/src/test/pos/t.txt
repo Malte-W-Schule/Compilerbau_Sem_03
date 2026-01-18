@@ -1,8 +1,8 @@
 class B{
 B(){}
-B(int a, int b)[{}
+B(int a, int b){}
 };
 
 
-void f(){};
-void f(int i){};
+void f(){}
+void f(int i){}

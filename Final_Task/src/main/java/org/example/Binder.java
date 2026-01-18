@@ -19,6 +19,10 @@ public class Binder {
         initNativeFunctions();
     }
 
+    public Scope getCurrentScope() {
+        return this.currentScope;
+    }
+
     public void visitProgram(ProgramNode node) {
         for (ASTNode n : node.statements()) {
             if (n instanceof Statement) {
@@ -259,6 +263,7 @@ public class Binder {
         FDeclNode fDeclInt = new FDeclNode(false, new VoidType(), false, print_int, intParams, fblockInt);
 
         Symbol native_print_int = new Symbol("print_int", new VoidType(), fDeclInt, this.currentScope, false);
+        System.out.println(this.currentScope);
         this.currentScope.bind(native_print_int);
 
         // == Print Bool ==

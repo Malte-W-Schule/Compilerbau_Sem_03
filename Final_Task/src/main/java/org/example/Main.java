@@ -16,10 +16,7 @@ import java.nio.file.Paths;
 public class Main {
     public static void main(String[] args) {
 
-
-
         Path testsdir = Paths.get("src/test/pos/");
-
 
         // Der Rest bleibt identisch...
        /* if (!Files.exists(testsdir) || !Files.isDirectory(testsdir)) {
@@ -30,7 +27,7 @@ public class Main {
         int i = 1;
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(testsdir)) {
 //
-            Path entry = Path.of("src/test/pos/t.txt");
+            Path entry = Path.of("src/test/pos/functest.txt");
             try {
                 String fileContent = Files.readString(entry);
                 run(fileContent,i);

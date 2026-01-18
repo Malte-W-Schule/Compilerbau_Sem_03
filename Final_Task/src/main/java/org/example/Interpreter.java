@@ -5,11 +5,40 @@ import java.util.List;
 
 public class Interpreter {
 
+    private static void setup(Environment env)
+    {
+
+        // --- print_int(int) ---
+        FDeclNode fakePrintIntDecl = createFakeFDecl("print_int", new IntType());
+        env.define("print_int_" + new IntType().toString(), new NativePrint(fakePrintIntDecl, null));
+
+        // --- print_string(string) ---
+        FDeclNode fakePrintStringDecl = createFakeFDecl("print_str", new StringType());
+        env.define("print_str_" + new StringType().toString(), new NativePrint(fakePrintStringDecl, null));
+
+        // --- print_char(char) ---
+        FDeclNode fakePrintCharDecl = createFakeFDecl("print_char", new CharType());
+        env.define("print_char_" + new CharType().toString(), new NativePrint(fakePrintCharDecl, null));
+
+        // --- print_bool(bool) ---
+        FDeclNode fakePrintBoolDecl = createFakeFDecl("print_bool", new BoolType());
+        env.define("print_bool_" + new BoolType().toString(), new NativePrint(fakePrintBoolDecl, null));
+
+    }
+
+    private static FDeclNode createFakeFDecl(String name, Type paramType) {
+        IDNode funcId = new IDNode(name);
+        SingleParamNode param = new SingleParamNode(paramType, false, new IDNode("value"));
+        ParamNodeDecl params = new ParamNodeDecl(List.of(param));
+        FBlockNode emptyBlock = new FBlockNode(null, List.of());
+        return new FDeclNode(false, new VoidType(), false, funcId, params, emptyBlock);
+    }
+
     //visit
     public static void interpret(ProgramNode node, Environment env) {
-
+        setup(env);
         for (ASTNode n : node.statements()) {
-            System.out.println(n+":");
+           // System.out.println(n+":");
             evaluateProgramNode(n, env);
         }
     }
@@ -148,7 +177,7 @@ public class Interpreter {
     }
 
     private static Object evalFBlockNode(FBlockNode fBlock, Environment env) {
-        System.out.println("--Fblock");
+        //System.out.println("--Fblock");
         for (Statement s : fBlock.body()) {
             evaluateStatement(s, env);
         }
@@ -219,7 +248,7 @@ public class Interpreter {
             case ArithmetischeExpressionNode math -> {
                 Object left = evaluateExpression(math.left(), env);
                 Object right = evaluateExpression(math.right(), env);
-                System.out.println(" Ergebnis: "+evalMath(left,math.operator(),right)); //todo entfernen
+             //   System.out.println(" Ergebnis: "+evalMath(left,math.operator(),right)); //todo entfernen
                 yield evalMath(left, math.operator(), right); // Helper-Methode (siehe unten)
             }
             case LogischeExpressionNode logic -> {
@@ -236,21 +265,48 @@ public class Interpreter {
     }
 
     private static Object evalFuncCall(FCallNode fCallNode, Environment env) {
-        Fun fn = (Fun) env.get(fCallNode.id().name());
+
+        String funktionsNameMitParamtern = fCallNode.id().name();
+
+        fCallNode.params();
+        for(Expression exp : fCallNode.params().params())
+        {
+            Type t =  resolve(exp);
+            funktionsNameMitParamtern = funktionsNameMitParamtern + "_" + t.toString();
+        }
+
+        Fun fn = (Fun) env.get(funktionsNameMitParamtern);
+
         List<Object> args = new ArrayList<>();
         for (int i = 0; i < fCallNode.params().params().size(); i++) {
             args.add(evaluateExpression(fCallNode.params().params().get(i), env));
         }
 
-        env = new Environment(fn.closure());
-        for (int i = 0; i < args.size(); i++) {
-            env.define(fn.fDeclNode().params().params().get(i).id().name(), args.get(i));
-        }
+        env = new Environment(fn.getClosure());
+        fn.call(env, args);
 
-
-        return evaluateStatement(fn.fDeclNode().block(), env); //todo irgendetwas zurückgeben
+        return evaluateStatement(fn.getfdeclNode().block(), env); //todo irgendetwas zurückgeben
     }
 
+
+    // Expressions MÜSSEN einen PrimType zurückgeben
+    static public Type resolve(Expression expression) {
+
+        return switch (expression) {
+            case IntegerNode i -> new IntType();
+            case StringNode s -> new StringType();
+            case BoolNode b -> new BoolType();
+            case CharNode c -> new CharType();
+        /*    case MCall m -> visitMCall(m); todo implementieren
+            case FCallNode f -> visitFCall(f);
+            case LogischeExpressionNode e -> visitLogischeExpressionNode(e);
+            case ArithmetischeExpressionNode e -> visitArithmetischeExpressionNode(e);
+            case IDNode id -> visitID(id);*/
+            default -> throw new IllegalStateException("Unexpected value: " + expression);
+        };
+    }
+
+    //todo m call für klassen instanzen.
     private static Object evalMethodCall(MCall mCallNode, Environment env) {
 
         //klasse

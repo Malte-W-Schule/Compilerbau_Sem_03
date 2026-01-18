@@ -1,5 +1,11 @@
 
+
 int func(int a, int b) {
     return a + b;
 }
 func(7,3);
+
+print_int(1);
+print_str("su");
+print_bool(false);
+print_char('a');

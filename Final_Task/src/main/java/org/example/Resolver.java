@@ -14,7 +14,7 @@ public class Resolver {
 
     public Resolver(Binder binder) {
         // Globaler Scope (Eltern-Scope ist null)
-        currentScope = new Scope(null);
+        currentScope = binder.getCurrentScope();
         this.binder = binder;
         this.nodeScope = binder.getNodeScope();
     }
@@ -196,7 +196,8 @@ public class Resolver {
 
     private Type visitFCall(FCallNode f) {
         Scope tempScope = this.currentScope;
-        Symbol fDecl = currentScope.resolve(f.id().name());
+
+        Symbol fDecl = this.currentScope.resolve(f.id().name());
 
         //Hier erst übergebene Parameter im aktuellen Scope prüfen
         ParamCallNode paramCall = f.params();
@@ -217,8 +218,6 @@ public class Resolver {
         //Scope zu Funktionsaufruf ändern, um Zugriff auf die deklarierten Parameter zu ermöglichen
         Scope fBlockScope = fDecl.getScope();
         this.currentScope = fBlockScope;
-
-
 
         FDeclNode fDeclNode = (FDeclNode) fDecl.getConnectedNode();
 
