@@ -1,6 +1,7 @@
 package org.example;
 
 import java.io.FileDescriptor;
+import java.text.DateFormatSymbols;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -8,6 +9,7 @@ import java.util.Map;
 public class Resolver {
 
     private Binder binder;
+    private ArrayList<String> klassen = new ArrayList<>();
 
     private Scope currentScope;
     private Map<ASTNode, Scope> nodeScope = new HashMap<>();
@@ -34,8 +36,7 @@ public class Resolver {
 
     // Statements geben keinen Typ zurück (void)
     public void resolve(Statement statement) {
-        //hier schreiben:
-        //ParamNode
+
         switch (statement) {
             case InitNode i -> visitInit(i);
             case DeclNode d -> visitDecl(d);
@@ -102,6 +103,7 @@ public class Resolver {
     }
 
     public void visitCDecl(CDeclNode c) {
+        klassen.add(c.name().name());
         Scope oldScope = this.currentScope;
         this.currentScope = nodeScope.get(c);
         resolve(c.block());
@@ -115,14 +117,23 @@ public class Resolver {
     //===================== aktiv resolven ================
     // == visit Statements ==
     private void visitInit(InitNode initNode) {
-        //String idName = initNode.id().name();
-        //currentScope.resolve(idName); //todo id nicht resolven, da diese binded wurden?
-        //Scope scope = nodeScope.get(initNode);
+
+        //Grad ncoh nicht Polymorphie fähig, da Superklasse a = Klasse b; nicht unterstütz wird.
+        //Nur linke Declaration wird für Scope Suche genutzt
+       if(initNode.type() instanceof KlassenType){
+           Scope oldScope = this.currentScope;
+           String klassenName = ((KlassenType) initNode.type()).name();
+           Symbol klasse = currentScope.resolve(klassenName);
+           Scope klassenScope = klasse.getScope();
+           this.currentScope = klassenScope;
+           currentScope.resolve(resolve(initNode.value()).toString());
+           this.currentScope = oldScope;
+           return;
+       }
+
         currentScope.resolve(resolve(initNode.value()).toString()); //todo tostring?
     }
 
-    //Der d;
-    //d.x=5;
     private void visitAssi(AssiNode assiNode) {//record AssiNode(IDNode id, Expression value) implements Statement, ASTNode{}
         Symbol lhs;
         if (assiNode.objectId() != null && assiNode.objectId().name() != null) {
@@ -197,7 +208,19 @@ public class Resolver {
     private Type visitFCall(FCallNode f) {
         Scope tempScope = this.currentScope;
 
-        Symbol fDecl = this.currentScope.resolve(f.id().name());
+        //======nur wegen Überladung==========================================================
+        //der muss den namen auch wiederherstellen
+        String nameOhneParams = f.id().name();
+        String nameMitParams = nameOhneParams;
+
+        ParamCallNode paramCalls = f.params();
+        for (Expression e : paramCalls.params()) {
+            Type param = (resolve(e));
+            nameMitParams = nameMitParams + "_" + param.toString();
+        }
+        //=====================================================================
+
+        Symbol fDecl = this.currentScope.resolve(nameMitParams);
 
         //Hier erst übergebene Parameter im aktuellen Scope prüfen
         ParamCallNode paramCall = f.params();
@@ -240,7 +263,21 @@ public class Resolver {
     private void visitConCall(ConCallNode c) {
 
         Scope tempScope = this.currentScope;
-        Symbol cDecl = currentScope.resolve(c.name().name());
+
+        //======nur wegen Überladung==========================================================
+        //der muss den namen auch wiederherstellen mit typen
+        String nameOhneParams = c.name().name();
+        String nameMitParams = nameOhneParams;
+
+        ParamCallNode paramCalls = c.params();
+        for (Expression e : paramCalls.params()) {
+            Type param = (resolve(e));
+            nameMitParams = nameMitParams + "_" + param.toString();
+        }
+        //=====================================================================
+
+
+        Symbol cDecl = currentScope.resolve(nameMitParams);
 
         //Hier erst übergebene Parameter im aktuellen Scope prüfen
         ParamCallNode paramCall = c.params();
@@ -261,7 +298,7 @@ public class Resolver {
         this.currentScope = tempScope;
     }
 
-    private void visitMCallStmt(MCall m) {//todo inherit scope
+    private void visitMCallStmt(MCall m) {
         //Klasse ist im globalen Scope, sollte so gehen
         currentScope.resolve(m.clars().name());
         //Funktionsname ist nicht im globalen Scope, sondern Klassen Scope
@@ -288,8 +325,21 @@ public class Resolver {
         Symbol klassenSymbol = currentScope.resolve(klassenname);
         this.currentScope = klassenSymbol.getScope();
 
+        //======nur wegen Überladung==========================================================
+        //der muss den namen auch wiederherstellen
+        String nameOhneParams = m.fName().name();
+        String nameMitParams = nameOhneParams;
+
+        ParamCallNode paramCalls = m.params();
+        for (Expression e : paramCalls.params()) {
+            Type param = (resolve(e));
+            nameMitParams = nameMitParams + "_" + param.toString();
+        }
+        //=====================================================================
+
+
         // Symbol von function getten um paras über fdecl node zu holen
-        Symbol fSymbol = currentScope.resolve(m.fName().name());
+        Symbol fSymbol = currentScope.resolve(nameMitParams);
 
         // function declare node für paramsdecl getten
         FDeclNode fDeclNode = (FDeclNode) fSymbol.getConnectedNode();
@@ -330,7 +380,7 @@ public class Resolver {
             resolve(s);
         }
 
-        if (b.ret() != null) //todo gucken wo resolve void returned und wie?
+        if (b.ret() != null)
         {
             resolve(b.ret().value());
         }

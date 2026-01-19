@@ -131,7 +131,7 @@ public class Binder {
 
         visitStmt(f.block());
 
-        Symbol ids = new Symbol(f.id().name(), f.type(), f, currentScope, f.and());
+        Symbol ids = new Symbol(f.nameParaKombi(), f.type(), f, currentScope, f.and());
 
         nodeScope.put(f, currentScope);
         currentScope = currentScope.getParent();
@@ -182,7 +182,7 @@ public class Binder {
             currentScope.bind(s);
         }
         visitStmt(c.block());
-        Symbol sym = new Symbol(c.name().name(), c.name(), c, currentScope, false);
+        Symbol sym = new Symbol(c.nameParaKombi(), c.name(), c, currentScope, false);
         nodeScope.put(c, currentScope);
         currentScope = currentScope.getParent();
         currentScope.bind(sym);
@@ -260,9 +260,9 @@ public class Binder {
         IDNode print_int = new IDNode("print_int");
 
         FBlockNode fblockInt = new FBlockNode(new ReturnNode(null), List.of());
-        FDeclNode fDeclInt = new FDeclNode(false, new VoidType(), false, print_int, intParams, fblockInt);
+        FDeclNode fDeclInt = new FDeclNode(false, new VoidType(), false, print_int, intParams, fblockInt, "print_int_IntType[]");
 
-        Symbol native_print_int = new Symbol("print_int", new VoidType(), fDeclInt, this.currentScope, false);
+        Symbol native_print_int = new Symbol("print_int_IntType[]", new VoidType(), fDeclInt, this.currentScope, false);
         System.out.println(this.currentScope);
         this.currentScope.bind(native_print_int);
 
@@ -272,9 +272,9 @@ public class Binder {
         IDNode print_bool = new IDNode("print_bool");
 
         FBlockNode fBlockBool = new FBlockNode(new ReturnNode(null), List.of());
-        FDeclNode fDeclBool = new FDeclNode(false, new VoidType(), false, print_bool, boolParams, fBlockBool);
+        FDeclNode fDeclBool = new FDeclNode(false, new VoidType(), false, print_bool, boolParams, fBlockBool, "print_bool_BoolType[]");
 
-        Symbol native_print_bool = new Symbol("print_bool", new VoidType(), fDeclBool, this.currentScope, false);
+        Symbol native_print_bool = new Symbol("print_bool_BoolType[]", new VoidType(), fDeclBool, this.currentScope, false);
         this.currentScope.bind(native_print_bool);
 
         // == Print Char ==
@@ -283,9 +283,9 @@ public class Binder {
         IDNode print_char = new IDNode("print_char");
 
         FBlockNode fblockChar = new FBlockNode(new ReturnNode(null), List.of());
-        FDeclNode fDeclNodeChar = new FDeclNode(false, new VoidType(), false, print_char, charParams, fblockChar);
+        FDeclNode fDeclNodeChar = new FDeclNode(false, new VoidType(), false, print_char, charParams, fblockChar, "print_char_CharType[]");
 
-        Symbol native_print_char = new Symbol("print_char", new VoidType(), fDeclNodeChar, this.currentScope, false);
+        Symbol native_print_char = new Symbol("print_char_CharType[]", new VoidType(), fDeclNodeChar, this.currentScope, false);
         this.currentScope.bind(native_print_char);
 
         // == Print String ==
@@ -294,9 +294,9 @@ public class Binder {
         IDNode print_str = new IDNode("print_str");
 
         FBlockNode fblockStr = new FBlockNode(new ReturnNode(null), List.of());
-        FDeclNode fDeclNodeStr = new FDeclNode(false, new VoidType(), false, print_str, strParams, fblockStr);
+        FDeclNode fDeclNodeStr = new FDeclNode(false, new VoidType(), false, print_str, strParams, fblockStr, "print_str_StrType[]");
 
-        Symbol native_print_str = new Symbol("print_str", new VoidType(), fDeclNodeStr, this.currentScope, false);
+        Symbol native_print_str = new Symbol("print_str_StrType[]", new VoidType(), fDeclNodeStr, this.currentScope, false);
         this.currentScope.bind(native_print_str);
     }
 

@@ -31,7 +31,7 @@ public class Interpreter {
         SingleParamNode param = new SingleParamNode(paramType, false, new IDNode("value"));
         ParamNodeDecl params = new ParamNodeDecl(List.of(param));
         FBlockNode emptyBlock = new FBlockNode(null, List.of());
-        return new FDeclNode(false, new VoidType(), false, funcId, params, emptyBlock);
+        return new FDeclNode(false, new VoidType(), false, funcId, params, emptyBlock, name);
     }
 
     //visit

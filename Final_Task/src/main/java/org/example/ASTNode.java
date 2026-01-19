@@ -1,7 +1,5 @@
 package org.example;
 
-import com.sun.nio.sctp.AbstractNotificationHandler;
-
 import java.util.List;
 
 
@@ -39,6 +37,7 @@ record StringNode(String value) implements Expression,  ASTNode{}
 record BoolNode(boolean value) implements Expression, ASTNode{}
 record CharNode(char value) implements Expression, ASTNode{}
 record LitNode(char value)implements ASTNode{}
+
 // === Variabel (Declaration, Initialisation...) ===
 record DeclNode(Type type, IDNode id, boolean and) implements Statement, ASTNode{}
 record InitNode(Type type, IDNode id, boolean and, Expression value) implements Statement, ASTNode{}
@@ -49,26 +48,24 @@ record BlockNode(List<Statement> body) implements Block{}
 record FBlockNode(ReturnNode ret, List<Statement> body) implements Block{}
 record CBlockNode(boolean visibility, List<Statement> body) implements Block{}
 
-// === IF WHILE ... ===
+// === IF / WHILE ... ===
 record IfNode(Expression com, Block thenBlock, Block elseBlock )implements Statement, ASTNode{}
 record WhileNode(Expression com, Block block) implements ASTNode,Statement{}
 
 // === Function ===
-record FDeclNode(boolean virtual, Type type, boolean and, IDNode id, ParamNodeDecl params, Block block) implements ASTNode,Statement {}
+record FDeclNode(boolean virtual, Type type, boolean and, IDNode id, ParamNodeDecl params, Block block, String nameParaKombi) implements ASTNode,Statement {}
 record FCallNode(IDNode id, ParamCallNode params) implements ASTNode, Statement, Expression{}
+
 // === Parameter ===
-//record ParamNode(ParamCallNode params)implements ASTNode{} //todo doppeltgemoppelt?
 record ParamCallNode(List<Expression> params)implements ASTNode{}
 record ParamNodeDecl(List<SingleParamNode> params)implements ASTNode{}
 record SingleParamNode(Type type, boolean and, IDNode id) implements ASTNode {}
 
 // === Class ===
 record CDeclNode(KlassenType type, IDNode name, IDNode inherit, boolean isInherit, Block block ) implements ASTNode,Statement{}
+
 // constructor
-//List<FDeclNode> functions,ConDeclNode constructor
-// Point(int a, int b) { x = a; y = b; }
-record ConDeclNode(IDNode name, ParamNodeDecl params, Block block) implements ASTNode,Statement{};
-//Default: Point p; Parametrisiert: Point p = Point(3, 4);
+record ConDeclNode(IDNode name, ParamNodeDecl params, Block block, String nameParaKombi) implements ASTNode,Statement{};
 record ConCallNode(IDNode name, ParamCallNode params) implements ASTNode,Statement, Expression{}
 
 // === Method Call from class ===

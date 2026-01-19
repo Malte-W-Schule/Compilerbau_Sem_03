@@ -11,7 +11,8 @@ import java.util.List;
 public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
 
     //Brauchen wir, um Konstruktoren zu finden.
-    ArrayList<String> klassennamen = new ArrayList();
+    private ArrayList<String> klassennamen = new ArrayList();
+
 
     @Override
     public ASTNode visitClass_decl(CplusplusParser.Class_declContext ctx){
@@ -31,7 +32,7 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
             inherit = new IDNode(ctx.ID(1).getText()); //0 ist ID Klasse, 1 ist ID der vererbten Klasse            System.out.println("Inherit_:"+ );
 
             isInherit = true;
-        }//todo inherit scope
+        }
         CBlockNode block = (CBlockNode) visit(ctx.class_block());
         return new CDeclNode((KlassenType) t, id, inherit , isInherit, block);
     }
@@ -107,7 +108,22 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
         IDNode id = new IDNode(name);
         FBlockNode block = (FBlockNode) visit(ctx.f_block());
         ParamNodeDecl params = ((ParamNodeDecl) visit(ctx.parameter_decl()));
-        return new ConDeclNode(id, params, block);
+
+        //==========================Nur für Überladung==================================================================
+        //für die spätere auseinanderhaltung der Funktionen wird hier ein String aus dem Namen und den Parameter Typen
+        // erstellt
+        String nameParaKombi = name;
+        for (int i = 0; i < params.params().size(); i++) {
+            SingleParamNode single = (SingleParamNode) params.params().get(i);
+            Type typ = single.type();
+            nameParaKombi = nameParaKombi + "_" + typ.toString();
+        }
+        if(params.params().isEmpty()){
+            nameParaKombi = name + "ohnePara";
+        }
+        //==============================================================================================================
+
+        return new ConDeclNode(id, params, block, nameParaKombi);
     }
 
     @Override
@@ -127,12 +143,24 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
         }
         ParamNodeDecl params = (ParamNodeDecl) visit(ctx.parameter_decl());
         FBlockNode block = (FBlockNode) visit(ctx.f_block());
-        return new FDeclNode(virtual, t, and, id, params, block);
+
+        //==========================Nur für Überladung==================================================================
+        //für die spätere auseinanderhaltung der Funktionen wird hier ein String aus dem Namen und den Parameter Typen
+        // erstellt
+        String nameParaKombi = name;
+        for (int i = 0; i < params.params().size(); i++) {
+            SingleParamNode single = (SingleParamNode) params.params().get(i);
+            Type typ = single.type();
+            nameParaKombi = nameParaKombi + "_" + typ.toString();
+        }
+        //==============================================================================================================
+
+        return new FDeclNode(virtual, t, and, id, params, block, nameParaKombi);
     }
 
     @Override
     public ASTNode visitF_block(CplusplusParser.F_blockContext ctx) {
-        // System.out.println("fblock"); // Debug Output entfernt für Clean Print
+
         List<Statement> body = new ArrayList<>();
         for (CplusplusParser.StmtContext stmtCtx : ctx.stmt()) {
             ASTNode node = visit(stmtCtx);
@@ -151,20 +179,7 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitF_call_no_semi(CplusplusParser.F_call_no_semiContext ctx) {
-
         String name = ctx.ID().getText();
-
-        /*boolean istFunktionsnameEinKlassenname = false;
-        for(int i = 0; i < klassennamen.size(); i++){
-            if(klassennamen.get(i).equals(name)){
-                istFunktionsnameEinKlassenname = true;
-                break;
-            }
-        }
-        if(istFunktionsnameEinKlassenname){
-            return visitConstructor_decl(ctx);
-        }*/
-
         IDNode id = new IDNode(name);
         ParamCallNode params = (ParamCallNode) visit(ctx.parameter_call());
         return new FCallNode(id, params);
@@ -188,7 +203,6 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitParameter_decl(CplusplusParser.Parameter_declContext ctx) {
         List<SingleParamNode> params = new ArrayList<>();
-
         if (ctx.getChildCount() != 0) {
             for (int i = 0; i < ctx.parameter().size(); i++) {
                 params.add((SingleParamNode) visit(ctx.parameter(i)));
@@ -230,7 +244,6 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitBlock(CplusplusParser.BlockContext ctx) {
-        // System.out.println("block"); // Debug Output entfernt
         List<Statement> body = new ArrayList<>();
         for (CplusplusParser.StmtContext stmtCtx : ctx.stmt()) {
             ASTNode node = visit(stmtCtx);
@@ -288,6 +301,7 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitType(CplusplusParser.TypeContext ctx) {
+
         if (ctx.getText().equals("int")) {
             return new IntType();
         } else if (ctx.getText().equals("bool")) {

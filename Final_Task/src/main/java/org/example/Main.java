@@ -19,15 +19,15 @@ public class Main {
         Path testsdir = Paths.get("src/test/pos/");
 
         // Der Rest bleibt identisch...
-       /* if (!Files.exists(testsdir) || !Files.isDirectory(testsdir)) {
+        if (!Files.exists(testsdir) || !Files.isDirectory(testsdir)) {
             System.err.println("Verzeichnis nicht gefunden: " + testsdir.toAbsolutePath());
             System.err.println("Bitte stelle sicher, dass der Ordner 'tests' im Projektverzeichnis liegt.");
             return;
-        }*/
+        }
         int i = 1;
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(testsdir)) {
 //
-            Path entry = Path.of("src/test/pos/functest.txt");
+            Path entry = Path.of("src/test/pos/test4_slicing.txt");
             try {
                 String fileContent = Files.readString(entry);
                 run(fileContent,i);
@@ -38,7 +38,7 @@ public class Main {
             }
 ///*
 
-          /*for (Path entry : stream) {
+         /* for (Path entry : stream) {
 
                 if (Files.isRegularFile(entry)) {
                     System.out.println("\n--------------------------------------------------");
@@ -52,7 +52,11 @@ public class Main {
                         System.err.println("Fehler: " + e.getMessage());
                     }
                 }
-            }*/
+          }*/
+
+
+
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -86,10 +90,10 @@ public class Main {
         System.out.println("Resolver:");
         Resolver solver = new Resolver(binder);
         solver.resolve((ProgramNode) meinEigenerAST);
-
+/*
         System.out.println("Interpreter:");
         Interpreter interpreter = new Interpreter();
-        interpreter.interpret((ProgramNode) meinEigenerAST, new Environment(null));
+        interpreter.interpret((ProgramNode) meinEigenerAST, new Environment(null));*/
 
 
         //System.out.println(tree.toStringTree(meinEigenerAST));
