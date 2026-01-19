@@ -217,6 +217,15 @@ public class Interpreter {
 
     // return null?
     private static Object evalInitNode(InitNode init, Environment env) {
+
+        // refferenz erstellen
+        if(init.and()){
+            IDNode idNode = (IDNode) init.value();
+            Ref ref = new Ref(idNode.name());
+            env.define(init.id().name(), ref);
+            return null;
+        }
+
         env.define(init.id().name(), evaluateExpression(init.value(), env));
         return null;
     }
@@ -267,17 +276,17 @@ public class Interpreter {
 
     private static Object evalAssiNode(AssiNode assiNode, Environment env) {
 
-        //Zuweisung mit Objekt zB d.x=10;
-        //objctname . name = value;
-        
         if (assiNode.objectId() != null && assiNode.objectId().name() != null){
             Instance i = (Instance) env.get(assiNode.objectId().name());
             i.getAttribute(assiNode.id().name());
             Object attributswert = evaluateExpression(assiNode.value(), env);
             i.assignAttribute(assiNode.id().name(), attributswert);//Überschreiben von Attributswert
             return null; //todo erstmal null returnen?
-        }
-        else{
+        } /*else if (a instanceof Ref) {
+
+            return null;
+        }*/
+        else {
             env.assign(assiNode.id().name(), evaluateExpression(assiNode.value(), env));
             return null;
         }

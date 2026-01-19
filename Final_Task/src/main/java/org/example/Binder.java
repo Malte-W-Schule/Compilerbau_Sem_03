@@ -263,7 +263,7 @@ public class Binder {
         FDeclNode fDeclInt = new FDeclNode(false, new VoidType(), false, print_int, intParams, fblockInt, "print_int_IntType[]");
 
         Symbol native_print_int = new Symbol("print_int_IntType[]", new VoidType(), fDeclInt, this.currentScope, false);
-        System.out.println(this.currentScope);
+
         this.currentScope.bind(native_print_int);
 
         // == Print Bool ==
@@ -296,7 +296,7 @@ public class Binder {
         FBlockNode fblockStr = new FBlockNode(new ReturnNode(null), List.of());
         FDeclNode fDeclNodeStr = new FDeclNode(false, new VoidType(), false, print_str, strParams, fblockStr, "print_str_StrType[]");
 
-        Symbol native_print_str = new Symbol("print_str_StrType[]", new VoidType(), fDeclNodeStr, this.currentScope, false);
+        Symbol native_print_str = new Symbol("print_str_StringType[]", new VoidType(), fDeclNodeStr, this.currentScope, false);
         this.currentScope.bind(native_print_str);
     }
 

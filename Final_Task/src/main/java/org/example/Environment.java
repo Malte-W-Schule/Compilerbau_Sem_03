@@ -49,6 +49,11 @@ public class Environment {
     // Variablen nachschlagen
     public Object get(String name) {
         if (values.containsKey(name)) {
+            if(values.get(name) instanceof Ref)
+            {
+                return get(((Ref) values.get(name)).getKeyRefferenz());
+
+            }
             return values.get(name);
         }
         if (parent != null) {
@@ -58,17 +63,18 @@ public class Environment {
     }
 
     public void assign(String name, Object value) {
-
+        if (values.get(name) instanceof Ref) {
+            assign(((Ref) values.get(name)).getKeyRefferenz(), value);
+            return;
+        }
         if (values.containsKey(name)) {
             values.put(name, value);
             return;
         }
-
         if (parent != null) {
             parent.assign(name, value);
             return;
         }
-
         throw new RuntimeException("Undefined variable '" + name + "'");
     }
 

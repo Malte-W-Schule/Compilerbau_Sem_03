@@ -352,7 +352,7 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
             i++;
         }
         id = new IDNode(ctx.ID(i).getText());
-        System.out.println(id.toString());
+        //System.out.println(id.toString());
         Expression value = (Expression) visit(ctx.expr());
         return new AssiNode(objectId, id, value);
     }

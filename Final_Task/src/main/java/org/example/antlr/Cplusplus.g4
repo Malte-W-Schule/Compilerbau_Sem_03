@@ -75,12 +75,12 @@ constructor_decl: ID parameter_decl f_block;
 // === Function Declaration ===
 // void cast(type parameter1,...) { body (return*) }
 // Class::Methode(){}
-f_decl: VIRTUAL? type AND? ID parameter_decl (f_block|';');
+f_decl: VIRTUAL? type AND? ID parameter_decl (f_block|';'); //todo vllt auf virtual hinweisen
 f_block: CLBRACK stmt* return? CRBRACK;
 
 // === Function Call ===
 f_call: f_call_no_semi ';';
-f_call_no_semi : ID parameter_call;
+f_call_no_semi : ID parameter_call; //todo zeigen
 
 // === Parameter ===
 parameter_decl:  LBRACK ( parameter (',' parameter)* )? RBRACK;
@@ -110,7 +110,7 @@ while_stmt: WHILE LBRACK logExpr RBRACK block;
 //
 atom: STRING
     | CHAR
-    | SIGN? INT
+    | SIGN? INT  //todo assign zeigen, + - Vorzeichen
     | ID
     | LITERAL
     | bool
@@ -122,7 +122,7 @@ type: 'string'
     | 'bool'
     | 'char'
     | 'void'
-    |  ID
+    |  ID //todo Klassentypen erwähenen
     ;
 
 // === Declaration ===
@@ -176,7 +176,7 @@ CHAR    :   '\'' . '\'';
 
 // === Literal ===
 //z.B.: \n, \0 usw...
-LITERAL :   '\'' '\\'. '\'';
+LITERAL :   '\'' '\\'. '\''; //todo literale erwähnen
 
 // === Token ===
 IF      :   'if';
@@ -209,7 +209,7 @@ CRBRACK :   '}';
 WS          :   [ \t\r\n]+ -> skip ;
 
 // === Comment ===
-// Zeilenweise Kommentare: // bis zum Zeilenende
+// Zeilenweise Kommentare: // bis zum Zeilenende  //todo zeigen dass alles nötige ignoriert wird
 COMMENT     :   '//'.*? '\n'  -> skip;
 IMPORT      :   '#'.*? '\n'  -> skip;
 
