@@ -27,7 +27,7 @@ public class Main {
         int i = 1;
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(testsdir)) {
 //
-            Path entry = Path.of("src/test/pos/test4_slicing.txt");
+            Path entry = Path.of("src/test/pos/test0.txt");
             try {
                 String fileContent = Files.readString(entry);
                 run(fileContent,i);
@@ -90,11 +90,10 @@ public class Main {
         System.out.println("Resolver:");
         Resolver solver = new Resolver(binder);
         solver.resolve((ProgramNode) meinEigenerAST);
-/*
+
         System.out.println("Interpreter:");
         Interpreter interpreter = new Interpreter();
-        interpreter.interpret((ProgramNode) meinEigenerAST, new Environment(null));*/
-
+        interpreter.interpret((ProgramNode) meinEigenerAST, new Environment(null));
 
         //System.out.println(tree.toStringTree(meinEigenerAST));
         //System.out.println(meinEigenerAST);

@@ -9,7 +9,8 @@ public class NativePrint extends Fun {
     }
 
     @Override
-    public void call(Environment env, List<Object> args) {
+    public Object call(Environment env, List<Object> args) {
         System.out.println(args.get(0));
+        return null;
     }
 }

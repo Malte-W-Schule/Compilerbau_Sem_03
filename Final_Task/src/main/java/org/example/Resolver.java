@@ -150,6 +150,7 @@ public class Resolver {
             this.currentScope = klassenScope;
             lhs = currentScope.resolve(assiNode.id().name());
             this.currentScope = temp;
+
         } else {
 
             lhs = currentScope.resolve(assiNode.id().name());

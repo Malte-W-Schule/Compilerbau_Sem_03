@@ -1,28 +1,31 @@
 package org.example;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Interpreter {
+
 
     private static void setup(Environment env)
     {
 
         // --- print_int(int) ---
         FDeclNode fakePrintIntDecl = createFakeFDecl("print_int", new IntType());
-        env.define("print_int_" + new IntType().toString(), new NativePrint(fakePrintIntDecl, null));
+        env.define("print_int", new NativePrint(fakePrintIntDecl, null));
 
         // --- print_string(string) ---
         FDeclNode fakePrintStringDecl = createFakeFDecl("print_str", new StringType());
-        env.define("print_str_" + new StringType().toString(), new NativePrint(fakePrintStringDecl, null));
+        env.define("print_str", new NativePrint(fakePrintStringDecl, null));
 
         // --- print_char(char) ---
         FDeclNode fakePrintCharDecl = createFakeFDecl("print_char", new CharType());
-        env.define("print_char_" + new CharType().toString(), new NativePrint(fakePrintCharDecl, null));
+        env.define("print_char" , new NativePrint(fakePrintCharDecl, null));
 
         // --- print_bool(bool) ---
         FDeclNode fakePrintBoolDecl = createFakeFDecl("print_bool", new BoolType());
-        env.define("print_bool_" + new BoolType().toString(), new NativePrint(fakePrintBoolDecl, null));
+        env.define("print_bool", new NativePrint(fakePrintBoolDecl, null));
 
     }
 
@@ -120,7 +123,7 @@ public class Interpreter {
                 // Konstruktor-Aufruf
             }
             case MCall mCall -> {
-                yield evalMCallNode(mCall, env);
+                yield evalMCallNode(mCall, env);//todo richtiger Methodenaufruf oder evalMethodCall?
                 // Methoden-Aufruf: obj.method();
             }
             default -> throw new IllegalStateException("Unexpected value: " + statementNode);
@@ -129,6 +132,7 @@ public class Interpreter {
 
     //todo
     private static Object evalMCallNode(MCall mCall, Environment env) {
+        System.out.println("mcall"+mCall.toString().toString());
         return null;
     }
 
@@ -141,6 +145,23 @@ public class Interpreter {
     }
 
     private static Object evalCDeclNode(CDeclNode cDecl, Environment env) {
+        Map<String, Fun> methods = new HashMap<>();
+        Map<String, Attribute> attributes = new HashMap<>();
+        CBlockNode cBlock = (CBlockNode) cDecl.block();
+
+        for (int i = 0; i < cBlock.body().size(); i++) {
+            if (cBlock.body().get(i) instanceof FDeclNode) {
+                FDeclNode fDecl = (FDeclNode) cBlock.body().get(i);
+                methods.put(fDecl.id().name(), new Fun(fDecl, env));
+            }
+            if (cBlock.body().get(i) instanceof DeclNode) {
+                DeclNode decl = (DeclNode) cBlock.body().get(i);
+                Attribute attribute = new Attribute(cDecl.type(), null);
+                attributes.put(decl.id().name(), attribute);
+            }
+        }
+        ClazzInterpreter clazz = new ClazzInterpreter(methods, attributes);
+        env.define(cDecl.name().name(), clazz);
         return null;
     }
     
@@ -201,8 +222,20 @@ public class Interpreter {
     }
 
     // === Statements ===
-    private static Object evalDeclNode(DeclNode declNode, Environment environment) {
-        environment.define(declNode.id().name(), null);
+    private static Object evalDeclNode(DeclNode declNode, Environment env) {
+
+        if(declNode.type() instanceof KlassenType) // wenn typ gleich klasse/instanz of klasse default bzw konstrutkor
+        {
+            //ConCall könnte bei uns keine überladenen Constructoren auflösen, deshalb instantiieren wir hier direkt...
+            //ConCallNode cNode = new ConCallNode(declNode.id(), null);
+            //evalConCallNode(cNode, env);
+            ClazzInterpreter clazz = (ClazzInterpreter) env.get(((KlassenType) declNode.type()).name());
+            Instance instance = (Instance) clazz.call(env, null);
+            env.define(declNode.id().name(), instance);
+            //todo richtige Environmet?
+        } else {
+            env.define(declNode.id().name(), null);
+        }
         return null;
     }
 
@@ -210,19 +243,21 @@ public class Interpreter {
 
         //hole den Namen der Funktion
         String name = fDeclNode.id().name();
+
+        /*//================ nur für Überladung =========================================================
         //hole Parameter aus fDecl und löse sie zu einer Typen Liste auf
         ArrayList<Type> paramTypen = new ArrayList<>();
-
         for (int i = 0; i < fDeclNode.params().params().size(); i++) {
             paramTypen.add(fDeclNode.params().params().get(i).type());
         }
-
         //gehe die Parameter Liste durch. Hänge ja nach typ eine Bezeichnung an den Namen der Funktion->mache so Kombi aus Funktion und Params einzigartig
         if(paramTypen.size()!=0) {
             for (int i = 0; i < paramTypen.size(); i++) {
                 name = name + "_" + paramTypen.get(i).toString();
             }
         }
+        //============================================================================================*/
+
 
         Fun fn = new Fun(fDeclNode, env);
         env.define(name, fn);
@@ -231,8 +266,21 @@ public class Interpreter {
 
 
     private static Object evalAssiNode(AssiNode assiNode, Environment env) {
-        env.assign(assiNode.id().name(), evaluateExpression(assiNode.value(), env));
-        return null;
+
+        //Zuweisung mit Objekt zB d.x=10;
+        //objctname . name = value;
+        
+        if (assiNode.objectId() != null && assiNode.objectId().name() != null){
+            Instance i = (Instance) env.get(assiNode.objectId().name());
+            i.getAttribute(assiNode.id().name());
+            Object attributswert = evaluateExpression(assiNode.value(), env);
+            i.assignAttribute(assiNode.id().name(), attributswert);//Überschreiben von Attributswert
+            return null; //todo erstmal null returnen?
+        }
+        else{
+            env.assign(assiNode.id().name(), evaluateExpression(assiNode.value(), env));
+            return null;
+        }
     }
 
     // === Expression ===
@@ -268,12 +316,14 @@ public class Interpreter {
 
         String funktionsNameMitParamtern = fCallNode.id().name();
 
-        fCallNode.params();
+        //====================== wegen Überladung ====================================
+       /* fCallNode.params();
         for(Expression exp : fCallNode.params().params())
         {
             Type t =  resolve(exp);
             funktionsNameMitParamtern = funktionsNameMitParamtern + "_" + t.toString();
         }
+        //================================================================================*/
 
         Fun fn = (Fun) env.get(funktionsNameMitParamtern);
 
@@ -297,18 +347,38 @@ public class Interpreter {
             case StringNode s -> new StringType();
             case BoolNode b -> new BoolType();
             case CharNode c -> new CharType();
-        /*    case MCall m -> visitMCall(m); todo implementieren
+
+        /*  case MCall m -> visitMCall(m); todo implementieren
             case FCallNode f -> visitFCall(f);
             case LogischeExpressionNode e -> visitLogischeExpressionNode(e);
             case ArithmetischeExpressionNode e -> visitArithmetischeExpressionNode(e);
             case IDNode id -> visitID(id);*/
-            default -> throw new IllegalStateException("Unexpected value: " + expression);
+            default -> throw new IllegalStateException("Unexpected value: " + expression + ", resolving issue");
         };
     }
 
+
+    //def getExpr(self, AST t):
+    //    obj = eval(t.obj())
+    //
+    //    if isinstance(obj, Instance):
+    //        return ((Instance)obj).get(t.ID().getText())
+    //
+    //    raise RuntimeError(t.obj().getText(), "no object")
+
+
+    //public class A {}
+    //A a = A();
+    //
     //todo m call für klassen instanzen.
     private static Object evalMethodCall(MCall mCallNode, Environment env) {
 
+        //clars.def() A.def() a.def)(
+        System.out.println("Classname:" +mCallNode.clars().name());
+        /*
+        ClazzInterpreter clazzInterpreter = (ClazzInterpreter) env.get(mCallNode.clars().name());
+        clazzInterpreter.
+        Instance classInsance = clazzInterpreter.call(env,);*/
         //klasse
         //von der klasse die funktion
         //mit parametern aufrufen

@@ -1,0 +1,10 @@
+
+class D {
+public:
+    int x;
+
+};
+
+D d;
+d.x = 10;
+print_int(f);

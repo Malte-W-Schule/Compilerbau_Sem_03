@@ -16,10 +16,11 @@ public class Fun implements Callable {
     }
 
     @Override
-    public void call(Environment env, List<Object> args) {
+    public Object call(Environment env, List<Object> args) {
         for (int i = 0; i < args.size(); i++) {
             env.define(this.fDeclNode.params().params().get(i).id().name(), args.get(i));
         }
+        return null;
     }
 
     public Fun bind(Instance i) {

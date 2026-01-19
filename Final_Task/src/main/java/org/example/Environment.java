@@ -8,14 +8,12 @@ import java.util.Map;
 public class Environment {
     private Map<String, Object> values = new HashMap<>();
 
-    //private Map< String, Map<ArrayList<Type> paramTypes, Block b>> functions = new HashMap<>();
-    //private Map<String, List<List<Type>>> parameterKombis = new HashMap<>();
-
-
-
     private Map< FunEnvironment, Block> functions = new HashMap<>();
 
-    public void define(FunEnvironment name, Block value) {
+    //=== Überladungsgedanken=========================
+    //private Map< String, Map<ArrayList<Type> paramTypes, Block b>> functions = new HashMap<>();
+    //private Map<String, List<List<Type>>> parameterKombis = new HashMap<>();
+    /*public void define(FunEnvironment name, Block value) {
         if(functions.containsKey(name))
         {
             System.out.println("Duplicate name " + name);
@@ -24,17 +22,15 @@ public class Environment {
         {
             functions.put(name,value);
         }
-    }
-
+    }*/
+    //===============================================
     public Block get(FunEnvironment name)
     {
         return functions.get(name);
     }
 
     private Environment parent; // Für spätere Scopes (optional für den Anfang)
-//f(x)
-//f(x,x)
-    //(f(x,x) f(int i) f(int y)
+
     public Environment(Environment parent) {
         this.parent = parent;
         if (parent == null) {
