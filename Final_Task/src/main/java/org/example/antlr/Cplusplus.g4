@@ -1,9 +1,5 @@
 grammar Cplusplus;
 
-//#inlcude == kommentar
-//kommentar == //
-//block kommentar /* */
-//#(Präprozessor) == Kommentar
 
 // === Programm ===
 program: stmt+ EOF;
@@ -26,7 +22,6 @@ stmt: if_stmt
     ;
 
 // === Expression ===
-//expression / value
 expr:
         arithmExpr
       | logExpr
@@ -36,18 +31,17 @@ expr:
       | f_call_no_semi
       ;
 
-arithmExpr: // log op
+arithmExpr:
       ae1=arithmExpr ('*') ae2=arithmExpr                       #mul_expr
     | ae1=arithmExpr ('/') ae2=arithmExpr                       #div_expr
     | ae1=arithmExpr ('%') ae2=arithmExpr                       #mod_expr
     | ae1=arithmExpr ('+') ae2=arithmExpr                       #add_expr
     | ae1=arithmExpr ('-') ae2=arithmExpr                       #sub_expr
     | LBRACK arithmExpr RBRACK                                  #aritgrouping
-    | atom                                                      #atom_arithmExpr //todo was ist mit Vorzeichen?
+    | atom                                                      #atom_arithmExpr
     ;
-//if ()
-// 1*1 != 2*2
-logExpr: //plus mal minus -> ari
+
+logExpr:
      le1= logExpr ('==')le2=logExpr                             #doubleEqual
     | le1=logExpr ('!=') le2=logExpr                            #notEqual
     | le1=logExpr ('<')  le2=logExpr                            #lessThen
@@ -61,20 +55,14 @@ logExpr: //plus mal minus -> ari
     | (NEGATE)? atom                                            #atom_logExpr
     ;
 
-//Parameterloser Konstruktor und weitere Konstruktoren (jeweils ohne Initialisierungslisten), Verwendung nur als T x; (ruft T() auf) oder T x = T(args); (kein direkter Aufruf T x(args);!)
-// Point p;
-// p = Point(3, 4)
 
 
+// ==== Constructor =====
 constructor_call: ID parameter_call';';
 // T x; (ruft T()
 constructor_decl: ID parameter_decl f_block;
 
-// === Functions ===
-//Überladung (Overloading) nur per exakt passender Signatur (Name + Anzahl + exakte Typen inkl. &‑Markierung)
-// === Function Declaration ===
-// void cast(type parameter1,...) { body (return*) }
-// Class::Methode(){}
+//======= Funktionen =====
 f_decl: VIRTUAL? type AND? ID parameter_decl (f_block|';'); //todo vllt auf virtual hinweisen
 f_block: CLBRACK stmt* return? CRBRACK;
 
@@ -87,27 +75,23 @@ parameter_decl:  LBRACK ( parameter (',' parameter)* )? RBRACK;
 parameter : type AND? ID;
 parameter_call:  LBRACK (  expr (',' expr)* )? RBRACK;
 
-// === Bool ===
-bool    :   'true' | 'false';
 
 // === Block ===
 block : CLBRACK stmt*  CRBRACK;
 
-
 return: RETURN expr ';';
 
 // === IF ===
-//if( statement){ then block, else block }
 if_stmt: IF LBRACK logExpr RBRACK then_block (else_block)?;
-//else block
+
 else_block: ELSE block;
-//then block
+
 then_block: block;
 
 // === while ===:
 while_stmt: WHILE LBRACK logExpr RBRACK block;
 
-//
+
 atom: STRING
     | CHAR
     | SIGN? INT  //todo assign zeigen, + - Vorzeichen
@@ -115,6 +99,9 @@ atom: STRING
     | LITERAL
     | bool
     ;
+
+// === Bool ===
+bool    :   'true' | 'false';
 
 // === Type ===
 type: 'string'
@@ -127,24 +114,20 @@ type: 'string'
 
 // === Declaration ===
 decl     :    type  AND?  ID ';' ;
-// int& int int &
 
 // === Initialisation ===
-init    :   type AND? ID ASS expr ';';
+init    :   type AND? ID ASS expr ';';//todo zeigen Variablen und Zuweisungen
 
 // === Assign ===
-//assign    zuweisung
 assign  : (ID'.')? ID ASS expr ';' ;
 
-//class_decl: CLASSS ID (':' ID)? CLBRACK ('public:')? (stmt)* CRBRACK';';
+//Klassen
 class_decl : CLASS ID (':' PUBLIC ID)?  class_block;
 class_block : CLBRACK (PUBLIC ':')? stmt* CRBRACK ';';
 
 // === Method call ===
-//b.f()
+
 m_call: ID '.' ID parameter_call;
-//obj.f
-//Feld-/Methodenzugriff: obj.f, obj.m(args)
 
 // === Logic Operator ===
 //logic operator    Arithmetik (nur int): +, -, *, /, % (binäre Ausdrücke); +, - (unäre Ausdrücke)

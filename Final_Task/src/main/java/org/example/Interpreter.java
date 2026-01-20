@@ -8,8 +8,7 @@ import java.util.Map;
 public class Interpreter {
 
 
-    private static void setup(Environment env)
-    {
+    private static void setup(Environment env) {
 
         // --- print_int(int) ---
         FDeclNode fakePrintIntDecl = createFakeFDecl("print_int", new IntType());
@@ -21,7 +20,7 @@ public class Interpreter {
 
         // --- print_char(char) ---
         FDeclNode fakePrintCharDecl = createFakeFDecl("print_char", new CharType());
-        env.define("print_char" , new NativePrint(fakePrintCharDecl, null));
+        env.define("print_char", new NativePrint(fakePrintCharDecl, null));
 
         // --- print_bool(bool) ---
         FDeclNode fakePrintBoolDecl = createFakeFDecl("print_bool", new BoolType());
@@ -38,10 +37,13 @@ public class Interpreter {
     }
 
     //visit
-    public static void interpret(ProgramNode node, Environment env) {
-        setup(env);
+    public static void interpret(ProgramNode node, Environment env,boolean istSchon) {
+
+        if(!istSchon) {
+            setup(env);
+        }
         for (ASTNode n : node.statements()) {
-           // System.out.println(n+":");
+            // System.out.println(n+":");
             evaluateProgramNode(n, env);
         }
     }
@@ -72,7 +74,7 @@ public class Interpreter {
                 yield evalAssiNode(assi, env);
                 // Zuweisung: x = 10;
             }
-            case FCallNode func ->{
+            case FCallNode func -> {
                 yield evalFuncCall(func, env);
             }
 
@@ -132,7 +134,7 @@ public class Interpreter {
 
     //todo
     private static Object evalMCallNode(MCall mCall, Environment env) {
-        System.out.println("mcall"+mCall.toString().toString());
+        System.out.println("mcall" + mCall.toString().toString());
         return null;
     }
 
@@ -164,10 +166,9 @@ public class Interpreter {
         env.define(cDecl.name().name(), clazz);
         return null;
     }
-    
+
     private static Object evalWhileNode(WhileNode whileNode, Environment env) {
-        while(evaluateExpression(whileNode.com(), env).equals(true))
-        {
+        while (evaluateExpression(whileNode.com(), env).equals(true)) {
             evaluateStatement(whileNode.block(), env);
         }
         return null;
@@ -219,7 +220,7 @@ public class Interpreter {
     private static Object evalInitNode(InitNode init, Environment env) {
 
         // refferenz erstellen
-        if(init.and()){
+        if (init.and()) {
             IDNode idNode = (IDNode) init.value();
             Ref ref = new Ref(idNode.name());
             env.define(init.id().name(), ref);
@@ -233,7 +234,7 @@ public class Interpreter {
     // === Statements ===
     private static Object evalDeclNode(DeclNode declNode, Environment env) {
 
-        if(declNode.type() instanceof KlassenType) // wenn typ gleich klasse/instanz of klasse default bzw konstrutkor
+        if (declNode.type() instanceof KlassenType) // wenn typ gleich klasse/instanz of klasse default bzw konstrutkor
         {
             //ConCall könnte bei uns keine überladenen Constructoren auflösen, deshalb instantiieren wir hier direkt...
             //ConCallNode cNode = new ConCallNode(declNode.id(), null);
@@ -276,7 +277,7 @@ public class Interpreter {
 
     private static Object evalAssiNode(AssiNode assiNode, Environment env) {
 
-        if (assiNode.objectId() != null && assiNode.objectId().name() != null){
+        if (assiNode.objectId() != null && assiNode.objectId().name() != null) {
             Instance i = (Instance) env.get(assiNode.objectId().name());
             i.getAttribute(assiNode.id().name());
             Object attributswert = evaluateExpression(assiNode.value(), env);
@@ -285,8 +286,7 @@ public class Interpreter {
         } /*else if (a instanceof Ref) {
 
             return null;
-        }*/
-        else {
+        }*/ else {
             env.assign(assiNode.id().name(), evaluateExpression(assiNode.value(), env));
             return null;
         }
@@ -305,7 +305,7 @@ public class Interpreter {
             case ArithmetischeExpressionNode math -> {
                 Object left = evaluateExpression(math.left(), env);
                 Object right = evaluateExpression(math.right(), env);
-             //   System.out.println(" Ergebnis: "+evalMath(left,math.operator(),right)); //todo entfernen
+                //   System.out.println(" Ergebnis: "+evalMath(left,math.operator(),right)); //todo entfernen
                 yield evalMath(left, math.operator(), right); // Helper-Methode (siehe unten)
             }
             case LogischeExpressionNode logic -> {
@@ -383,7 +383,7 @@ public class Interpreter {
     private static Object evalMethodCall(MCall mCallNode, Environment env) {
 
         //clars.def() A.def() a.def)(
-        System.out.println("Classname:" +mCallNode.clars().name());
+        System.out.println("Classname:" + mCallNode.clars().name());
         /*
         ClazzInterpreter clazzInterpreter = (ClazzInterpreter) env.get(mCallNode.clars().name());
         clazzInterpreter.

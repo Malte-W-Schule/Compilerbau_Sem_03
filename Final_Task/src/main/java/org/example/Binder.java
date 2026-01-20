@@ -59,7 +59,7 @@ public class Binder {
         }
     }
 
-    public void visitExpression(Expression expression) { //todo return void? in binder?
+    public void visitExpression(Expression expression) {
 
         switch (expression) {
             case IntegerNode i -> new IntType();
@@ -79,13 +79,10 @@ public class Binder {
     // === Expression ===
 
     private void visitMCallExpr(MCall m) {
-        //nodeScope.put(m,currentScope);
-        // todo type von returntype von fdecl der function
     }
 
     private void visitFCallExpr(FCallNode f) {
         nodeScope.put(f, currentScope);
-        // todo return type? oder void
     }
 
     private void visitLogischeExpressionNode(LogischeExpressionNode l) {

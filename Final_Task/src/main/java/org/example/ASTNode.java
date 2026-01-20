@@ -13,8 +13,6 @@ public interface ASTNode {
 interface Statement extends ASTNode {}
 
 interface Expression extends ASTNode {
-   //  String prettyPrint();
-  //   String toExpressionession();
 }
 
 interface Block extends ASTNode,Statement{}

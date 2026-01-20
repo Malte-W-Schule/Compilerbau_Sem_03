@@ -6,100 +6,116 @@ import org.example.antlr.CplusplusLexer;
 import org.example.antlr.CplusplusParser;
 
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
+import java.util.Scanner; // WICHTIG: Scanner importieren
 
-//todo repl
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
+    public static boolean istSchon = false;
+    public static Binder binder = new Binder();
+
     public static void main(String[] args) {
 
-        Path testsdir = Paths.get("src/test/pos/");
 
-        // Der Rest bleibt identisch...
-        if (!Files.exists(testsdir) || !Files.isDirectory(testsdir)) {
-            System.err.println("Verzeichnis nicht gefunden: " + testsdir.toAbsolutePath());
-            System.err.println("Bitte stelle sicher, dass der Ordner 'tests' im Projektverzeichnis liegt.");
-            return;
+        if (args.length > 0 && args[0].equals("--repl")) {
+            startRepl(null);
+        } else {
+            runFileTests();
         }
-        int i = 1;
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(testsdir)) {
-//
-            Path entry = Path.of("src/test/pos/test0.txt");
+    }
+
+    // === NEUE REPL METHODE ===
+    public static void startRepl(Environment env) {
+        System.out.println("---------------------------");
+
+        Scanner scanner = new Scanner(System.in);
+
+        Environment globalEnv = env;
+
+        while (true) {
+            System.out.print(">> "); // Prompt
+            if (!scanner.hasNextLine()) break;
+
+            String line = scanner.nextLine();
+
+            // Abbruchbedingung
+            if (line.trim().equalsIgnoreCase("exit")) {
+                break;
+            }
+
+            // Leere Zeilen überspringen
+            if (line.trim().isEmpty()) continue;
+
             try {
-                String fileContent = Files.readString(entry);
-                run(fileContent,i);
-                i++;
+                // aufruf von angepasster run mehtode mit env
+                runSnippet(line, globalEnv);
             } catch (Exception e) {
                 System.err.println("Fehler: " + e.getMessage());
                 throw e;
             }
-///*
 
-         /* for (Path entry : stream) {
+        }
+        System.out.println("REPL beendet.");
+    }
 
-                if (Files.isRegularFile(entry)) {
-                    System.out.println("\n--------------------------------------------------");
-                    System.out.println("Verarbeite Datei: " + entry.getFileName());
+    // === Refactoring deiner run-Logik ===
+    public static Environment runSnippet(String inputString, Environment env) {
+        CharStream input = CharStreams.fromString(inputString);
+        CplusplusLexer lexer = new CplusplusLexer(input);
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        CplusplusParser parser = new CplusplusParser(tokens);
 
-                    try {
-                        String fileContent = Files.readString(entry);
-                        run(fileContent,i);
-                        i++;
-                    } catch (Exception e) {
-                        System.err.println("Fehler: " + e.getMessage());
-                    }
-                }
-          }*/
+        ParseTree tree = parser.program();
 
+        ASTGenerator generator = new ASTGenerator();
+        ASTNode ast = generator.visit(tree);
+        if(binder == null)
+        {
+            binder = new Binder();
+            binder.visitProgram((ProgramNode) ast);
+        }
 
+       // Binder binder = new Binder();
+        binder.visitProgram((ProgramNode) ast);
 
+        Resolver solver = new Resolver(binder);
+        solver.resolve((ProgramNode) ast);
 
+        Interpreter interpreter = new Interpreter();
+
+        interpreter.interpret((ProgramNode) ast, env,istSchon);
+        istSchon = true;
+        return env;
+    }
+
+    public static Environment run(String inputString, int testIndex) {
+        // Für Tests immer ein frisches Environment
+        Environment env = runSnippet(inputString, new Environment(null));
+        return env;
+    }
+
+    public static void runFileTests() {
+
+        System.out.println("=============== Test Start: ===============");
+        Path testsdir = Paths.get("src/test/pos/");
+        if (!Files.exists(testsdir) || !Files.isDirectory(testsdir)) {
+            System.err.println("Verzeichnis nicht gefunden: " + testsdir.toAbsolutePath());
+            return;
+        }
+
+        int i = 1;
+        try {
+            Path entry = Path.of("src/test/pos/test0.txt");
+            if (Files.exists(entry)) {
+                String fileContent = Files.readString(entry);
+                Environment env = run(fileContent, i);
+
+                System.out.println("starte REPL...");
+                startRepl(env);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        System.out.println("=============== Test End: ===============");
     }
-
-    public static void run(String inputString,int testIndex){
-
-        System.out.println("=============== Test Start: " + testIndex + " ===============");
-
-
-        CharStream input = CharStreams.fromString(inputString);
-        //CharStream input = CharStreams.fromString("int x = 5;");
-
-        CplusplusLexer lexer = new CplusplusLexer(input);
-        CommonTokenStream tokens = new CommonTokenStream(lexer);
-
-        CplusplusParser parser = new CplusplusParser(tokens);
-        ParseTree tree = parser.program();
-        System.out.println("Parse-Tree: ");
-        System.out.println(tree.toStringTree(parser));
-
-        System.out.println("AST:");
-        ASTGenerator generator = new ASTGenerator();
-        ASTNode meinEigenerAST = generator.visit(tree);
-        //ASTGenerator.print(meinEigenerAST);
-
-        System.out.println("Binder:");
-        Binder binder = new Binder();
-        binder.visitProgram((ProgramNode) meinEigenerAST);
-
-        System.out.println("Resolver:");
-        Resolver solver = new Resolver(binder);
-        solver.resolve((ProgramNode) meinEigenerAST);
-
-        System.out.println("Interpreter:");
-        Interpreter interpreter = new Interpreter();
-        interpreter.interpret((ProgramNode) meinEigenerAST, new Environment(null));
-
-        //System.out.println(tree.toStringTree(meinEigenerAST));
-        //System.out.println(meinEigenerAST);
-        System.out.println("=============== Test End: " + testIndex + " ===============");
-
-    }
-
 }
