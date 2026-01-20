@@ -93,8 +93,8 @@ public class Binder {
         nodeScope.put(a, currentScope);
     }
 
-    // =============== visit methods Statements with bind ==============================
-
+    // =============== visit methods Statements with bind ============================== //todo zu methoden bin, bind über umwege und gar nix machen sagen
+    //todo zu astgenerator zurück, überladung zeigen
     private void visitInit(InitNode initNode) {
 
         Symbol s = new Symbol(initNode.id().name(),
@@ -116,7 +116,7 @@ public class Binder {
 
         nodeScope.put(declNode, currentScope);
     }
-
+    //todo zeige Scopebindung für Parameter
     private void visitFDecl(FDeclNode f) {
         //neuer Scope
         this.currentScope = new Scope(currentScope);
@@ -136,6 +136,7 @@ public class Binder {
     }
 
     //momentan kann eine Klasse die eine Vererbung hat, nicht als Superklasse genutzt werden
+    //todo zeige Vererbung anhan der Scopes
     private void visitCDecl(CDeclNode c) {
 
         if (c.isInherit()) {
@@ -185,7 +186,8 @@ public class Binder {
         currentScope.bind(sym);
     }
 
-    // ==================================== binden über umwege ======================
+
+    // ==================================== binden über umwege ====================== 
 
     private void visitBlock(BlockNode b) {
         Scope blockScope = new Scope(currentScope);
@@ -220,6 +222,7 @@ public class Binder {
     private void visitWhile(WhileNode w) {
         visitStmt(w.block());
     }
+
 
     // ========================= einfach gar nix machen =======================
 

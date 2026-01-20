@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
+public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> { //todo zugeklappte methoden zeigen, für jede Parserregel eigene Methode, vllt Interface ASTNode erwähnen
 
     //Brauchen wir, um Konstruktoren zu finden.
     private ArrayList<String> klassennamen = new ArrayList();
@@ -315,7 +315,7 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
             String name = ctx.ID().getText();
             return new KlassenType(name);
         }
-    }
+    } //todo zeigen dass jeder typ ein record hat
 
     @Override
     public ASTNode visitDecl(CplusplusParser.DeclContext ctx) {
@@ -354,7 +354,7 @@ public class ASTGenerator extends CplusplusBaseVisitor<ASTNode> {
         //System.out.println(id.toString());
         Expression value = (Expression) visit(ctx.expr());
         return new AssiNode(objectId, id, value);
-    }
+    } //todo zeigen dass jeder operator eigene Methode hat
 
     // ==== arithmetic expressions ===
     public ASTNode visitMul_expr(CplusplusParser.Mul_exprContext ctx) {

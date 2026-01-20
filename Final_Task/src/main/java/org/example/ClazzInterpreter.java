@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ClazzInterpreter implements Callable {
+    //todo kurz die klasse vorstellen
     Map<String, Fun> methods;
     Map<String, Attribute> attributes;
 

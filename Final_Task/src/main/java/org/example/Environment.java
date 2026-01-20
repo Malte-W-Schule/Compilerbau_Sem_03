@@ -46,6 +46,7 @@ public class Environment {
         }
     }
 
+    //todo logik für referenzen zeigen
     // Variablen nachschlagen
     public Object get(String name) {
         if (values.containsKey(name)) {

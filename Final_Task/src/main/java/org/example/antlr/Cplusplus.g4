@@ -32,7 +32,7 @@ expr:
       ;
 
 arithmExpr:
-      ae1=arithmExpr ('*') ae2=arithmExpr                       #mul_expr
+      ae1=arithmExpr ('*') ae2=arithmExpr                       #mul_expr //todo zeigen ari logik klammern grouping
     | ae1=arithmExpr ('/') ae2=arithmExpr                       #div_expr
     | ae1=arithmExpr ('%') ae2=arithmExpr                       #mod_expr
     | ae1=arithmExpr ('+') ae2=arithmExpr                       #add_expr
@@ -68,7 +68,7 @@ f_block: CLBRACK stmt* return? CRBRACK;
 
 // === Function Call ===
 f_call: f_call_no_semi ';';
-f_call_no_semi : ID parameter_call; //todo zeigen
+f_call_no_semi : ID parameter_call; //todo zeigen zweigeteilt weil funtion als parameter kein semi hat
 
 // === Parameter ===
 parameter_decl:  LBRACK ( parameter (',' parameter)* )? RBRACK;
@@ -82,7 +82,7 @@ block : CLBRACK stmt*  CRBRACK;
 return: RETURN expr ';';
 
 // === IF ===
-if_stmt: IF LBRACK logExpr RBRACK then_block (else_block)?;
+if_stmt: IF LBRACK logExpr RBRACK then_block (else_block)?; //todo kontrollfluss mit optionalen else
 
 else_block: ELSE block;
 

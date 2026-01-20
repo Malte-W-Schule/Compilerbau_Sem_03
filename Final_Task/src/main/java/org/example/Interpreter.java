@@ -8,6 +8,7 @@ import java.util.Map;
 public class Interpreter {
 
 
+    //todo zeige native funktionen
     private static void setup(Environment env) {
 
         // --- print_int(int) ---
@@ -232,6 +233,7 @@ public class Interpreter {
     }
 
     // === Statements ===
+    //todo zeige handling von instanzen
     private static Object evalDeclNode(DeclNode declNode, Environment env) {
 
         if (declNode.type() instanceof KlassenType) // wenn typ gleich klasse/instanz of klasse default bzw konstrutkor
@@ -242,7 +244,6 @@ public class Interpreter {
             ClazzInterpreter clazz = (ClazzInterpreter) env.get(((KlassenType) declNode.type()).name());
             Instance instance = (Instance) clazz.call(env, null);
             env.define(declNode.id().name(), instance);
-            //todo richtige Environmet?
         } else {
             env.define(declNode.id().name(), null);
         }
@@ -275,6 +276,7 @@ public class Interpreter {
     }
 
 
+    //todo zeigen wie Klassen objekt attribut geändert wird
     private static Object evalAssiNode(AssiNode assiNode, Environment env) {
 
         if (assiNode.objectId() != null && assiNode.objectId().name() != null) {
@@ -282,7 +284,7 @@ public class Interpreter {
             i.getAttribute(assiNode.id().name());
             Object attributswert = evaluateExpression(assiNode.value(), env);
             i.assignAttribute(assiNode.id().name(), attributswert);//Überschreiben von Attributswert
-            return null; //todo erstmal null returnen?
+            return null;
         } /*else if (a instanceof Ref) {
 
             return null;
@@ -305,7 +307,6 @@ public class Interpreter {
             case ArithmetischeExpressionNode math -> {
                 Object left = evaluateExpression(math.left(), env);
                 Object right = evaluateExpression(math.right(), env);
-                //   System.out.println(" Ergebnis: "+evalMath(left,math.operator(),right)); //todo entfernen
                 yield evalMath(left, math.operator(), right); // Helper-Methode (siehe unten)
             }
             case LogischeExpressionNode logic -> {
@@ -366,20 +367,6 @@ public class Interpreter {
         };
     }
 
-
-    //def getExpr(self, AST t):
-    //    obj = eval(t.obj())
-    //
-    //    if isinstance(obj, Instance):
-    //        return ((Instance)obj).get(t.ID().getText())
-    //
-    //    raise RuntimeError(t.obj().getText(), "no object")
-
-
-    //public class A {}
-    //A a = A();
-    //
-    //todo m call für klassen instanzen.
     private static Object evalMethodCall(MCall mCallNode, Environment env) {
 
         //clars.def() A.def() a.def)(

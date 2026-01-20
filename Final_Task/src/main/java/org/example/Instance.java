@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Instance {
+    //kurz die klasse zeigen
     ClazzInterpreter clazz;
     private Map<String, Object> attributes = new HashMap<>();
 

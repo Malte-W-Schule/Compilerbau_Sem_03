@@ -2,7 +2,7 @@ package org.example;
 
 import java.util.List;
 
-
+//todo kurz zeigen, dass alles eignenen ASTKnoten hat
 public interface ASTNode {
     default void A()
     {

@@ -1,6 +1,7 @@
 package org.example;
 
 public class Ref {
+    //todo kurz die referenz zeigen
 
     String keyRefferenz;
 

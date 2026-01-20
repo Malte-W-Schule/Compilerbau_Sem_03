@@ -116,6 +116,7 @@ public class Resolver {
 
     //===================== aktiv resolven ================
     // == visit Statements ==
+    //todo zeige polymorphie ansatz
     private void visitInit(InitNode initNode) {
 
         //Grad ncoh nicht Polymorphie fähig, da Superklasse a = Klasse b; nicht unterstütz wird.
@@ -216,7 +217,7 @@ public class Resolver {
         ParamCallNode paramCalls = f.params();
         for (Expression e : paramCalls.params()) {
             Type param = (resolve(e));
-            nameMitParams = nameMitParams + "_" + param.toString();
+            nameMitParams = nameMitParams + "_" + param.toString(); //todo parameterlösung zeigen print_int1_int2
         }
         //=====================================================================
 
@@ -310,6 +311,7 @@ public class Resolver {
         }
     }
 
+    //todo zeige objekt auflösung
     private Type visitMCall(MCall m) {
 
         Scope temp = this.currentScope;
@@ -423,8 +425,8 @@ public class Resolver {
         }
         return type;
     }
-
-    private Type visitArithmetischeExpressionNode(ArithmetischeExpressionNode e) { //todo expression? oder statement, was mit scopes
+    //todo zeige typprüfung
+    private Type visitArithmetischeExpressionNode(ArithmetischeExpressionNode e) {
         Type left = resolve(e.left());
         Type right = resolve(e.right());
         String operator = e.operator();

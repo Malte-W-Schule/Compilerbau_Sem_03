@@ -5,19 +5,14 @@ import java.util.Map;
 
 public class Scope {
 
-    private Map<String,Symbol> symbolMap = new HashMap<>();
+    private Map<String,Symbol> symbolMap = new HashMap<>(); //todo Map als Symboltabelle zeigen
     private Scope parent;
 
     public Scope(Scope parent) {
         this.parent = parent;
     }
 
-    public Scope getParent() {
-        return parent;
-    }
-    public void setParent(Scope p){this.parent = p; }
-
-    //suchen
+    //suchen                                todo resolve und bind funktionalität zeigen
     public Symbol resolve(String name) {
         Symbol s = symbolMap.get(name);
         if (s != null) return s;
@@ -35,6 +30,9 @@ public class Scope {
         return true;
     }//bind
 
+
+
+
     public boolean isNameInMap(String name){
         if(symbolMap.containsKey(name)) {
             return true;
@@ -46,4 +44,11 @@ public class Scope {
         Symbol s = symbolMap.get(name);
         return s;
     }
+
+
+    public Scope getParent() {
+            return parent;
+        }
+        public void setParent(Scope p){this.parent = p; }
+
 }
