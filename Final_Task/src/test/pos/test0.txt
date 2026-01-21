@@ -1,19 +1,6 @@
 
 // REF Test
 
-class A{
-
- int b = 5;
-};
-
-A a;
-
-a.b = 7;
-int b = a.b;
-print_int(b);
-
-print_str("Test 2");
-
 int y = 4;
 int &a = y;
 y = 5;
