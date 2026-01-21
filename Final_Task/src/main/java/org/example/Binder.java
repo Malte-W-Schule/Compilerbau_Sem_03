@@ -93,7 +93,7 @@ public class Binder {
         nodeScope.put(a, currentScope);
     }
 
-    // =============== visit methods Statements with bind ============================== //todo zu methoden bin, bind über umwege und gar nix machen sagen
+    // =============== visit methods Statements with bind ==============================
     //todo zu astgenerator zurück, überladung zeigen
     private void visitInit(InitNode initNode) {
 
@@ -136,7 +136,7 @@ public class Binder {
     }
 
     //momentan kann eine Klasse die eine Vererbung hat, nicht als Superklasse genutzt werden
-    //todo zeige Vererbung anhan der Scopes
+    //todo zeige Vererbung anhand der Scopes
     private void visitCDecl(CDeclNode c) {
 
         if (c.isInherit()) {

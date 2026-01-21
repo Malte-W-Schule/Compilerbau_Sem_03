@@ -80,7 +80,7 @@ public class Resolver {
         if (s != null) {
             return s.getType();
 
-        } //todo bedenken
+        }
         return new VoidType();
     }
 
@@ -114,8 +114,7 @@ public class Resolver {
         resolve(c.block());
     }
 
-    //===================== aktiv resolven ================
-    // == visit Statements ==
+    //===================== aktiv resolven visit Statements ==================
     //todo zeige polymorphie ansatz
     private void visitInit(InitNode initNode) {
 
@@ -135,7 +134,7 @@ public class Resolver {
         currentScope.resolve(resolve(initNode.value()).toString()); //todo tostring?
     }
 
-    private void visitAssi(AssiNode assiNode) {//record AssiNode(IDNode id, Expression value) implements Statement, ASTNode{}
+    private void visitAssi(AssiNode assiNode) {
         Symbol lhs;
         if (assiNode.objectId() != null && assiNode.objectId().name() != null) {
             // ist d definiert
@@ -172,36 +171,6 @@ public class Resolver {
         resolve(w.block()); //todo com in block scope?
     }
 
-    //prüft Anzahl und Typen
-    private void checkParameter(ParamNodeDecl paramDecl, ArrayList<Type> types) {
-        if (paramDecl.params().size() != types.size()) {
-            throw new RuntimeException("Anzahl Parameter bei Übergabe stimmt nicht mit deklarierten überein");
-        }
-
-        for (int i = 0; i < types.size(); i++) {
-            Type typeDecl = paramDecl.params().get(i).type();
-            Type typeCall = types.get(i);
-            if (!typeDecl.equals(typeCall)) {
-                throw new RuntimeException("Typen der Paramter stimmen nicht überein");
-            }
-        }
-    }
-
-    private Type checkReturn(FBlockNode fBlock, Symbol fSymbol) {
-        Type retType = null;
-        if (fBlock.ret() != null && fBlock.ret().value() != null) {
-            retType = resolve(fBlock.ret().value());
-            if (!(retType instanceof VoidType)) {
-                Type func = fSymbol.getType();
-                if (!func.equals(retType)) {
-                    throw new RuntimeException("Typen der Funktion und des Rückgabewertes stimmen nicht überein");
-                }
-            }
-        }
-
-        return retType;
-    }
-
     private void visitBlock(Block b) {
         System.out.print("Fehler Block");
     }
@@ -217,7 +186,7 @@ public class Resolver {
         ParamCallNode paramCalls = f.params();
         for (Expression e : paramCalls.params()) {
             Type param = (resolve(e));
-            nameMitParams = nameMitParams + "_" + param.toString(); //todo parameterlösung zeigen print_int1_int2
+            nameMitParams = nameMitParams + "_" + param.toString();
         }
         //=====================================================================
 
@@ -310,7 +279,7 @@ public class Resolver {
             resolve(e);
         }
     }
-
+    //todo parameterlösung zeigen print_int1_int2
     //todo zeige objekt auflösung
     private Type visitMCall(MCall m) {
 
@@ -330,7 +299,6 @@ public class Resolver {
         this.currentScope = klassenSymbol.getScope();
 
         //======nur wegen Überladung==========================================================
-        //der muss den namen auch wiederherstellen
         String nameOhneParams = m.fName().name();
         String nameMitParams = nameOhneParams;
 
@@ -425,7 +393,7 @@ public class Resolver {
         }
         return type;
     }
-    //todo zeige typprüfung
+
     private Type visitArithmetischeExpressionNode(ArithmetischeExpressionNode e) {
         Type left = resolve(e.left());
         Type right = resolve(e.right());
@@ -446,7 +414,7 @@ public class Resolver {
         }
         return type;
     }
-
+    //todo zeige typprüfung
     private Type opCompare(Type type, String operator) {
         if (type instanceof IntType ||
                 type instanceof CharType) {
@@ -477,6 +445,34 @@ public class Resolver {
             throw new RuntimeException();
         }
     }
+    //prüft Anzahl und Typen
+    private void checkParameter(ParamNodeDecl paramDecl, ArrayList<Type> types) {
+        if (paramDecl.params().size() != types.size()) {
+            throw new RuntimeException("Anzahl Parameter bei Übergabe stimmt nicht mit deklarierten überein");
+        }
 
+        for (int i = 0; i < types.size(); i++) {
+            Type typeDecl = paramDecl.params().get(i).type();
+            Type typeCall = types.get(i);
+            if (!typeDecl.equals(typeCall)) {
+                throw new RuntimeException("Typen der Paramter stimmen nicht überein");
+            }
+        }
+    }
+
+    private Type checkReturn(FBlockNode fBlock, Symbol fSymbol) {
+        Type retType = null;
+        if (fBlock.ret() != null && fBlock.ret().value() != null) {
+            retType = resolve(fBlock.ret().value());
+            if (!(retType instanceof VoidType)) {
+                Type func = fSymbol.getType();
+                if (!func.equals(retType)) {
+                    throw new RuntimeException("Typen der Funktion und des Rückgabewertes stimmen nicht überein");
+                }
+            }
+        }
+
+        return retType;
+    }
 }
 

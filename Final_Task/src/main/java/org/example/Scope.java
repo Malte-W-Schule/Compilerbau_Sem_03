@@ -27,6 +27,7 @@ public class Scope {
             return false;
         }
         symbolMap.put(symbol.getName(), symbol);
+        System.out.print(symbol.getName() + " ");
         return true;
     }//bind
 
