@@ -17,11 +17,11 @@ public class Main {
 
         testBinderResolver();
 
-     /*   if (args.length > 0 && args[0].equals("--repl")) {
+        if (args.length > 0 && args[0].equals("--repl")) {
             startRepl(null);
         } else {
             runFileTests();
-        }*/
+        }
     }
 
     // === NEUE REPL METHODE ===

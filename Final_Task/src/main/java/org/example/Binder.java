@@ -146,7 +146,7 @@ public class Binder {
             Scope globalScope = currentScope;
             //currentScope.resolve(c.inherit().name());
 
-            this.currentScope = new Clazz(currentScope, clazzScope);//Patrick sagt, ist richtig
+            this.currentScope = new Clazz(currentScope, clazzScope);
             visitStmt(c.block());
 
             Symbol clas = new Symbol(c.name().name(), c.name(), c, currentScope, false);
